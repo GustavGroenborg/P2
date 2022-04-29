@@ -1,0 +1,40 @@
+html, body {
+    min-height: 480px;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+#mapv1 {
+    height: 100%;
+    width: 100%;
+
+    position: relative;
+}
+
+#mouse_loc {
+    border: black;
+    color: black;
+    background: white;
+    opacity: 1;
+
+    padding: 3px;
+
+    position: fixed;
+    left: 1vw;
+    bottom: 3.5vh;
+    z-index: 2400;
+}
+
+#mapMode {
+    padding: 3px;
+    position: fixed;
+    right: 7px;
+    top: 7px;
+    z-index: 2400;
+}
+
+#mapModeToggle {
+    filter: grayscale(100%);
+}
