@@ -45,7 +45,6 @@ function addChildToParent(parentId, childEl, childId, childClass) {
 
     if (childClass) {
         newChild.className = childClass;
-        console.log('Adding class' + childClass + ' to child');
     }
 
     parent.appendChild(newChild);
@@ -105,6 +104,166 @@ function menuDropDown(menuId, dropDownId) {
  *** COORDINATES PANE ***
  ************************/
 
+// Swapping two element of an array.
+function swapArrEl(arr, el1Idx, el2Idx) {
+    // Swapping the elements.
+    arr.splice(el1Idx, 1, arr.splice(el2Idx, 1, arr[el1Idx])[0]);
+}
+
+
+// Adding all necessary controls
+function addCoordControls(usrWPObj) {
+    let parent = document.querySelector(usrWPObj.html.id);
+
+    // Containers.
+    let controlsContainer = document.createElement('div');
+    controlsContainer.className = 'controlsContainerClass';
+
+    let upDownContainer = document.createElement('div');
+    upDownContainer.className = 'upDownContainerClass';
+
+    // Buttons.
+    let deleteBtn = document.createElement('img');
+    let upBtn = document.createElement('img');
+    let downBtn = document.createElement('img');
+
+
+    /*** Configuring the delete button ***/
+
+    deleteBtn.id = parent.id + 'DeleteBtn';
+    deleteBtn.src = './icons/deleteIconSVG.svg';
+    deleteBtn.className = 'deleteBtnClass';
+
+    // Adding an event listener to delete the coordinate.
+    deleteBtn.addEventListener('click', () => {
+        rmvUsrWP(usrWPObj);
+        parent.remove();
+    });
+
+    // Adding it to the relevant container
+    controlsContainer.appendChild(deleteBtn);
+
+
+    /*** Configuring the up button ***/
+
+    upBtn.id = parent.id + 'UpBtn';
+    upBtn.src = './icons/upDownIconSVG.svg';
+    // Making the up button point up.
+    upBtn.style.transform = 'rotate(180deg)';
+    upBtn.className = 'upBtnClass';
+
+    // Adding an event listener to make the coordinate element move one up.
+    upBtn.addEventListener('click', () => {
+        let grandParentNode = parent.parentNode;
+        let parentNode = controlsContainer.parentNode;
+
+        // Swapping the relevant elements in the array.
+        // Finding the index og the two elements to be swapped.
+        let el1Idx = usrWPCollection.findIndex((obj) => obj.html.idName === parentNode.id);
+        let el2Idx = usrWPCollection.findIndex((obj) => obj.html.idName === ((grandParentNode.firstChild === parentNode) ? grandParentNode.lastChild.id : parentNode.previousSibling.id));
+
+        swapArrEl(usrWPCollection, el1Idx, el2Idx);
+
+        // Moving the coordinate.
+        grandParentNode.insertBefore(parentNode, parentNode.previousSibling);
+
+        // Updating the directions.
+        updateDirections();
+    });
+
+
+    /*** Configuring the down button ***/
+
+    downBtn.id = parent.id + 'DownBtn';
+    downBtn.src = upBtn.src;
+    downBtn.className = 'downBtnClass';
+
+    // Adding an event listener to make the coordinate element move one down.
+    downBtn.addEventListener('click', () => {
+        let grandParentNode = parent.parentNode;
+        let parentNode = controlsContainer.parentNode;
+        let el1Idx, el2Idx;
+
+        // If the given coordinate is the last child, move it to the top.
+        if (grandParentNode.lastChild === parentNode) {
+            // Swapping the elements in the user waypoint collection.
+            el1Idx = usrWPCollection.findIndex((obj) => obj.html.idName === parentNode.id);
+            el2Idx = usrWPCollection.findIndex((obj) => obj.html.idName === grandParentNode.firstChild.id);
+
+            swapArrEl(usrWPCollection, el1Idx, el2Idx);
+
+            // Swapping the order in the coordinate pane.
+            grandParentNode.insertBefore(parentNode, grandParentNode.firstChild);
+
+        } else {
+            el1Idx = usrWPCollection.findIndex((obj) => obj.html.idName === parentNode.id);
+            el2Idx = usrWPCollection.findIndex((obj) => obj.html.idName === parentNode.nextSibling.nextSibling.id);
+
+            swapArrEl(usrWPCollection, el1Idx, el2Idx);
+
+            grandParentNode.insertBefore(parentNode, parentNode.nextSibling.nextSibling);
+        }
+
+        // Updating the directions.
+        updateDirections();
+    });
+
+
+
+    // Adding the up and down buttons to the relevant container.
+    upDownContainer.appendChild(upBtn);
+    upDownContainer.appendChild(downBtn);
+
+    // Adding the up and down container to the controls container.
+    controlsContainer.appendChild(upDownContainer);
+
+    // Adding the controls container to the parent.
+    parent.appendChild(controlsContainer);
+
+
+
+}
+
+
+// Adding a coordinates element to the coordinates list.
+function addCoordEl(usrWPObj) {
+    let elParent = document.querySelector('#coordListDiv');
+    let elContainer = document.createElement('div');
+    let coord = document.createElement('input'); //TODO add an input for this later.
+    let submit = document.createElement('input');
+
+
+    /*** Configuring the element container ***/
+    elContainer.id = usrWPObj.html.idName;
+    usrWPObj.html.id = '#' + elContainer.id;
+    elContainer.className = 'coordElContainer';
+
+
+    /*** Configuring the coordinate element ***/
+    coord.className = 'coordsStyle';
+    coord.type = 'text';
+    coord.name = usrWPObj.html.idName + 'Coord';
+    coord.value = usrWPObj.geoJSON.geometry.coordinates.toString();
+
+    // Adding the coordinate to the coordinate element container.
+    elContainer.appendChild(coord);
+
+    // Handling the submit button.
+    submit.type = 'submit';
+    submit.hidden = true;
+
+    // Adding the submit button to the coordinate element container.
+
+
+    // Adding everything to the coordinates list.
+    elParent.appendChild(elContainer);
+
+    /*** Controls ***/
+    addCoordControls(usrWPObj);
+
+}
+
+
 // Adding elements to the coordinates list
 function addCoordToList(coordNum, coordArrEl) {
     console.log('Add coord to list');
@@ -135,7 +294,7 @@ function addCoordToList(coordNum, coordArrEl) {
 
 // Adding all the coordinates to the list.
 function addAllCoords() {
-    for (let i = 0; i < usrWP.length; i++) {
+    for (let i = 0; i < usrWPCollection.length; i++) {
         addCoordToList(i);
     }
 }
@@ -157,10 +316,10 @@ addIconToMenuHeader('#coordPaneHeader', 'coordPaneDropDownIcon', 'dropDownIcon',
 addChildToParent('#coordPane', 'div', 'coordListDiv');
 
 // Adding the coordinates list <ol> element
-addChildToParent('#coordListDiv', 'ol', 'coordList');
+//addChildToParent('#coordListDiv', 'ol', 'coordList');
 
 // Adding all elements to the coordinates list
-addAllCoords();
+//addAllCoords();
 
 
 
@@ -172,18 +331,57 @@ addAllCoords();
 /*** Functions ***/
 
 // Adds a facility icon to a facility row
-function addFacilIcon(parentRowId, childId, facilIconFile) {
+function addFacilityIcon(parentRowId, facObj) {
     let parentRow = document.querySelector(parentRowId);
-    let newFacilIcon = document.createElement('img');
+    let newIcon = document.createElement('img');
 
-    newFacilIcon.src = './icons/' + facilIconFile;
-    newFacilIcon.id = childId;
-    newFacilIcon.className = 'facilIcon';
+    // Configuring the new icon.
+    newIcon.src = facObj.iconPath;
+    newIcon.id = facObj.html.idName;
+    newIcon.className = 'facilIcon';
+    newIcon.style.filter = 'grayscale(100%)';
 
-    newFacilIcon.style.filter = 'grayscale(100%)';
+    // Setting the id of the new icon.
+    facObj.html.id = '#' + newIcon.id;
 
-    parentRow.appendChild(newFacilIcon);
+    // Adding the new icon to HTML.
+    parentRow.appendChild(newIcon);
 }
+
+
+// Adds all necessary rows and all available facilities.
+function constructFacilityRows() {
+    let facilityNo = 0;
+    let rowNo = 0;
+    let rowIdName, rowId;
+
+    for (let prop in facilityCollection) {
+        // Increment the relevant variables when four icons are present in the current row.
+        if (facilityNo === 4) {
+            facilityNo = 0;
+            rowNo++;
+        }
+
+        // Creating a new row
+        if (facilityNo === 0) {
+            // Defining the id for the new row.
+            rowIdName = 'facilRow' + rowNo;
+            rowId = '#' + rowIdName;
+
+            // Adding the new row to HTML.
+            addChildToParent('#facilPaneDropDown', 'div', rowIdName, 'row');
+        }
+
+        // Adding a new to facility to HTML.
+        addFacilityIcon(rowId, facilityCollection[prop]);
+
+        // Adding an event listener to the new icon.
+        addIconEventListener(facilityCollection[prop]);
+
+        facilityNo++;
+    }
+}
+
 
 
 /*** Constructing the facility pane ***/
@@ -203,42 +401,8 @@ addIconToMenuHeader('#facilPaneHeader', 'facilPaneDropDownIcon', 'dropDownIcon',
 // Adding the element that drops down
 addChildToParent('#facilPane', 'div', 'facilPaneDropDown');
 
-// Adding the facility rows
-// Row 1
-addChildToParent('#facilPaneDropDown', 'div', 'facilRow1', 'row');
-
-// Adding icons to row 1
-addFacilIcon('#facilRow1', 'baalhytteIcon', 'baalhytteIconSVG.svg');
-addFacilIcon('#facilRow1', 'baalpladsIcon', 'baalpladsIconSVG.svg');
-addFacilIcon('#facilRow1', 'friTeltningIcon', 'friTeltningIconSVG.svg');
-addFacilIcon('#facilRow1','fritFiskeriIcon', 'fritFiskeriIconSVG.svg');
-
-
-// Row 2
-addChildToParent('#facilPaneDropDown', 'div', 'facilRow2', 'row');
-
-// Adding icons to row 2
-addFacilIcon('#facilRow2', 'hkLundIcon', 'haengekoejelundIconSVG.svg');
-addFacilIcon('#facilRow2', 'nationalparkIcon', 'nationalparkIconSVG.svg');
-addFacilIcon('#facilRow2', 'naturparkIcon', 'naturparkIconSVG.svg');
-addFacilIcon('#facilRow2', 'shelterIcon', 'shelterSVG.svg');
-
-
-// Row 3
-addChildToParent('#facilPaneDropDown', 'div', 'facilRow3', 'row');
-
-// Adding icons to row 3
-addFacilIcon('#facilRow3', 'spejderhytteIcon', 'spejderhytteIconSVG.svg');
-addFacilIcon('#facilRow3', 'teltpladsIcon', 'teltPladsIconSVG.svg');
-addFacilIcon('#facilRow3', 'tmIcon', 'toervejrsrum:madpakkehusIconSVG.svg');
-addFacilIcon('#facilRow3', 'vandpostIcon', 'vandpostIconSVG.svg');
-
-
-// Row 4
-addChildToParent('#facilPaneDropDown', 'div', 'facilRow4', 'row');
-
-// Adding remaining icon to row 4
-addFacilIcon('#facilRow4', 'wcIcon', 'wcSVG.svg');
+// Adding the facility rows and icons.
+constructFacilityRows();
 
 
 
@@ -253,18 +417,19 @@ addChildToParent('#menuPane', 'div', 'mouseLoc', 'menuPaneStyle');
  *** Event listeners ***
  ***********************/
 
-// Dropping down the coordinates list
+// Dropping down the coordinates list.
 document.querySelector("#coordPaneDropDownIcon").addEventListener('click', () => {
     menuDropDown('#coordListDiv', '#coordPaneDropDownIcon');});
 
-// Dropping down the facilities menu
+// Dropping down the facilities menu.
 document.querySelector('#facilPaneDropDownIcon').addEventListener('click', () => {
     menuDropDown('#facilPaneDropDown', '#facilPaneDropDownIcon');});
 
-// Showing the location of the mouse
+// Showing the location of the mouse.
 map.on('mousemove', (event) => {
     document.querySelector('#mouseLoc').textContent = latlngToString(event.latlng);});
 
-// Switching between DMS and DD
+
+// Switching between DMS and DD.
 document.querySelector('#mouseLoc').addEventListener('click', () => {
     dmsStatus = !dmsStatus; });

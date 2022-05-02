@@ -38,8 +38,6 @@
     width: 266.85px;
     height: auto;
 
-    overflow: scroll;
-
     align-content: center;
 
     /* Shadow heavily inspired by example made by w3schools.com link: https://www.w3schools.com/css/css3_shadows.asp */
@@ -73,7 +71,7 @@
 
 .menuPaneHeadline {
     width: 70%;
-    height: 2em;
+    height: 20%;
 
     text-align: left;
     font-family: "Times New Roman";
@@ -117,16 +115,9 @@
     margin: auto;
 
     overflow-y: scroll;
-    height: 8em;
+    height: 75%;
 }
 
-
-#coordList {
-    display: inline-block;
-    margin: auto;
-    padding-left: 0.75em;
-    height: 7.5em;
-}
 
 
 .coordPaneHeaderChild {
@@ -160,11 +151,43 @@
 }
 
 
-.coordItem {
-    margin-left: 1em;
-    margin-right: 1em;
-    padding: 0.25em;
+.coordElContainer {
+    display: flex;
+    justify-content: space-around;
+    height: 2em;
+
+    padding-bottom: .75em;
+    padding-right: .5em;
 }
+
+
+.controlsContainerClass {
+    width: 45%;
+    height: 2em;
+    display: flex;
+    justify-content: space-around;
+}
+
+
+.deleteBtnClass {
+    height: 2em;
+    width: 50%;
+}
+
+
+.upDownContainerClass {
+    height: 2em;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.upBtnClass, .downBtnClass {
+    height: 1em;
+}
+
+
 
 /*********************************
  *** Design of facilities pane ***
@@ -172,6 +195,9 @@
 
 #facilPaneDropDown {
     width: 100%;
+    height: 70%;
+
+    overflow-y: scroll;
 
     display: none;
     margin: auto;

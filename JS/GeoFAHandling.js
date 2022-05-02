@@ -1,74 +1,219 @@
-// Remember that all global variables do not need to be imported.
+/************************
+ *** GLOBAL VARIABLES ***
+ ************************/
+const fac_pkt_FRO = 'fkg.t_5800_fac_pkt';
+const fac_pkt_SEL = 'geometri,off_kode,navn,beskrivels,lang_beskr,ansvar_org,kontak_ved,vandhane_k,betaling_k,book_k,saeson_k,antal_pl,link,saeson_bem,saeson_st,saeson_sl F';
 
-/****************************
- *** ICONS AND ICON LAYER ***
- ****************************/
+const fac_fl_FRO = 'fkg.t_5801_fac_fl';
+const fac_fl_SEL = fac_pkt_SEL;
 
-// Creating a new icon
-function createNewIcon(iconFileName) {
-    return L.icon({
-        iconUrl: './icons/' + iconFileName,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12], // Placing the icon directly on top of the location
-        popupAnchor: [0, -12] // Placing the popup directly over the icon.
-    });
+const fac_li_FRO = 'fkg.t_5802_fac_li';
+const fac_li_SEL = 'geometri,statusKode,off_kode,rute_uty_k,navn,navndels,straekn_nr,afm_rute_k,laengde,beskrivels,lang_beskr,ansvar_org,kontak_ved,belaegn_k,svaerhed_k,kategori_k,hierarki_k,folde_link,kvalitet_k';
+
+
+let facilityCollection = {};
+let facilityLayerGroup = L.layerGroup().addTo(map);
+
+/***************
+ *** CLASSES ***
+ ***************/
+
+
+class FacilityCollectionElement {
+    constructor (name, iconFileName, GeoFATableArr, GeoFACode) {
+        this.name = name;
+        this.iconPath = './icons/' + iconFileName;
+        this.GeoFA = {
+            'table': GeoFATableArr,
+            'code': GeoFACode,
+            'geoJSON': {}
+        };
+        this.Leaflet = {
+            'icon': L.icon({
+                iconUrl: './icons/' + iconFileName,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+                popupAnchor: [0, -12]
+            }),
+            'geoJSON': {}
+        };
+        this.html = {
+            'idName': name + 'Icon',
+        };
+        this.dataLoaded = false;
+
+        // Adding this to the facility collection object.
+        facilityCollection[this.name] = this;
+    }
+
+    // NOTE addGeoFAData might be redundant
+    // Getting the data from the GeoFA database
+    addGeoFAData(dataFeatures) {
+        this.GeoFA.geoJSON.features = dataFeatures;
+    }
+
+    // Initiating the relevant Leaflet properties.
+    initLeafletProp(tableName) {
+        let leafletIcon = this.Leaflet.icon;
+
+        if (tableName === fac_pkt_FRO) {
+            // Creating the popup text
+            this.GeoFA.geoJSON.pkt.features.forEach((element) => {
+                popupText(element);
+            });
+
+            // Initiating the leaflet layer.
+            this.Leaflet.geoJSON.pkt = L.geoJSON(this.GeoFA.geoJSON.pkt, {
+                pointToLayer: function (feature, latlng) {
+                    return L.marker(latlng, {icon: leafletIcon});
+                },
+
+                // Initiating the popup
+                onEachFeature: onEachFeature
+            });
+
+        } else if (tableName === fac_fl_FRO) {
+            // Creating the popup text
+            this.GeoFA.geoJSON.fl.features.forEach((element) => {
+                popupText(element);
+            });
+
+            this.Leaflet.geoJSON.fl = L.geoJSON(this.GeoFA.geoJSON.fl, {
+                style: {
+                    weight: 1,
+                    color: '#000000',
+                    opacity: 1,
+                    fillColor: '#156e2d',
+                    fillOpacity: 0.3
+                },
+                onEachFeature: onEachFeature
+            });
+
+        } else if (tableName === fac_li_FRO) {
+            this.GeoFA.geoJSON.li.features.forEach((element) => {
+                popupText(element);
+            });
+
+            // TODO fix the style of the lines. It looks rather ugly...
+            this.Leaflet.geoJSON.li = L.geoJSON(this.GeoFA.geoJSON.li, {
+                style: {
+                    color: '#f5a700',
+                    weight: 3
+                },
+                onEachFeature: onEachFeature
+            });
+
+        } else {
+            console.error('ERROR CODE 2: tableName does not match a valid table! \n Value of tableName: ' + tableName + '\n');
+        }
+
+    }
+
+
 }
 
-//TODO consider creating the icons as constants
-// TODO give the icons some nicer names
-// Defining and initiating all the icons
-// Icons are names after the first letter of the first two syllables.
-// Bålhytte
-const bhIcon = createNewIcon('baalhytteIconSVG.svg');
-
-// Bålplads
-const bpIcon = createNewIcon('baalpladsIconSVG.svg');
-
-// Fri teltning
-const ftIcon = createNewIcon('friTeltningIconSVG.svg');
-
-// Frit fiskeri
-const ffIcon = createNewIcon('fritFiskeriIconSVG.svg');
-
-// Hængekøjelund
-const hkIcon = createNewIcon('haengekoejelundIconSVG.svg');
-
-// Nationalpark
-const ntnParkIcon = createNewIcon('nationalparkIconSVG.svg');
-
-// Naturpark
-const ntIcon = createNewIcon('naturparkIconSVG.svg');
-
-// Shelter
-const stIcon = createNewIcon('shelterSVG.svg');
-
-// Spejderhytte
-const sdIcon = createNewIcon('spejderhytteIconSVG.svg');
-
-// Teltplads
-const tpIcon = createNewIcon('teltPladsIconSVG.svg');
-
-// Tørvejrsrum/madpakkehus
-const tvIcon = createNewIcon('toervejrsrum:madpakkehusIconSVG.svg');
-
-// Vandpost
-const vpIcon = createNewIcon('vandpostIconSVG.svg');
-
-// WC
-const waterClosetIcon = createNewIcon('wcSVG.svg');
 
 
-// Defining and initiating the facilities layer group
-let facilLayerGroup = L.layerGroup().addTo(map);
+/*****************
+ *** FUNCTIONS ***
+ *****************/
 
-// Defining a facility object that will be used to control the layers
-let facilObj = {};
+// Getting data from GeoFa
+async function getGeofaData(sqlSelect, sqlFrom, sqlWhere) {
+    let url = `https://geofa.geodanmark.dk/api/v2/sql/fkg?q=SELECT ${sqlSelect} FROM ${sqlFrom} WHERE ${sqlWhere}&format=geojson&geoformat=geojson&srs=4326`;
+
+    try {
+        let response = await fetch(url);
+        return await response.json();
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// Rendering the data from GeoFA
+async function renderGeoFAdata(facObj) {
+    // Used to determine SELECT, FROM and WHERE.
+    let facObjTable = facObj.GeoFA.table;
+
+    // Used for the parameters used in the geoGeofaData-function.
+    let data, sqlSelect, sqlFrom, sqlWhere;
+
+    // Initiates all the necessary data.
+    function initData(objTable, propName) {
+
+        // Initiating the data as GeoJSON.
+        facObj.GeoFA.geoJSON[propName] = {
+            'type': 'FeatureCollection',
+            'features': data.features
+        }
+
+        // Registering that the data has been loaded.
+        facObj.dataLoaded = !!(data);
+
+        // Initiating the necessary Leaflet data.
+        facObj.initLeafletProp(objTable);
+
+    }
+
+    // Iterating through the relevant tables.
+    for (let el of facObjTable) {
+
+        // Determining which table it the relevant one.
+        if (el === fac_pkt_FRO) {
+            // Determining SELECT, FROM and WHERE.
+            sqlSelect = fac_pkt_SEL;
+            sqlFrom = fac_pkt_FRO;
+            sqlWhere = `facil_ty_k='${facObj.GeoFA.code}'`;
+
+            // Fetching the data
+            data = await getGeofaData(sqlSelect, sqlFrom, sqlWhere);
+
+            // Initiating the data.
+            initData( el, 'pkt');
+
+        } else if (el === fac_fl_FRO) {
+            sqlSelect = fac_fl_SEL;
+            sqlFrom = fac_fl_FRO;
+            sqlWhere = `facil_ty_k='${facObj.GeoFA.code}'`;
+
+            // Fetching the data
+            data = await getGeofaData(sqlSelect, sqlFrom, sqlWhere);
+
+            // Initiating the data.
+            initData(el, 'fl');
+
+        } else if (el === fac_li_FRO) {
+            sqlSelect = fac_li_SEL;
+            sqlFrom = fac_li_FRO;
+            sqlWhere = `rute_ty_k='${facObj.GeoFA.code}'`;
+
+            // Fetching the data
+            data = await getGeofaData(sqlSelect, sqlFrom, sqlWhere);
+
+            // Initiating the data.
+            initData(el, 'li');
+
+        } else {
+            console.log('\nCurrent obj:');
+            console.log(facObj);
+            console.error('ERROR CODE 1: element is not valid! \n Value of element: ' + el);
+        }
+
+    }
+
+}
 
 
-/***********************
- *** Test of concept ***
- ***********************/
-// Building the popup text
+// Function that controls the popup.
+function onEachFeature(feature, layer) {
+    if (feature.properties && feature.properties.popupContent) {
+        layer.bindPopup(feature.properties.popupContent, {
+            maxHeight: 100});
+    }
+}
+
+
+// Building the popup text TODO enhance this function
 function popupText(obj) {
     let str = '';
 
@@ -102,12 +247,12 @@ function popupText(obj) {
             console.log('\n');
         } else if (vandhane_k === 3) {
             str += 'Det er ukendt om der er en vandhane tilgængelig ved faciliteten. ';
-        } else {
+        } else { /*
             console.log('Hit default case in switch (obj.properties.vandhane_k). Value of vandhane_k: ' + obj.properties.vandhane_k);
             console.log(obj.properties);
             console.log('obj.properties.vandhane_k === 0 : ' + (obj.properties.vandhane_k === 0))
 
-            console.log('\n');
+            console.log('\n'); */
         }
     }
 
@@ -117,15 +262,15 @@ function popupText(obj) {
                 str += 'Faciliteten har helårsåbent. ';
                 break;
             case 2:
-                str += 'Faciliteten har sæsonåbent' + ((obj.properties.saeson_st !== null) ? 'fra ' + obj.properties.saeson_st.toString() : '. ')
-                    + ((obj.properties.saeson_sl !== null) ? ' til ' + obj.properties.saeson_sl.toString() + ' (MM-DD). ' : '. Sæson afslutningen er ikke oplyst');
+                str += 'Faciliteten har sæsonåbent' + ((obj.properties.saeson_st != null) ? 'fra ' + obj.properties.saeson_st.toString() : '. ')
+                    + ((obj.properties.saeson_sl != null) ? ' til ' + obj.properties.saeson_sl.toString() + ' (MM-DD). ' : '. Sæson afslutningen er ikke oplyst');
                 break;
 
             case 7:
                 str += 'Sæsonåbningstider er ikke relevant for denne facilitet. ';
                 break;
             default:
-                console.log('Hit default on switch (obj.properties.saeson_k), value: ' + obj.properties.saeson_k);
+                //console.log('Hit default on switch (obj.properties.saeson_k), value: ' + obj.properties.saeson_k);
                 break;
         }
 
@@ -149,7 +294,7 @@ function popupText(obj) {
                 str += 'Det er ukendt om faciliteten skal bookes. ';
                 break;
             default:
-                console.log('Hit default on switch (obj.properties.book_k), value: ' + obj.properties.book_k);
+                //console.log('Hit default on switch (obj.properties.book_k), value: ' + obj.properties.book_k);
                 break;
         }
     }
@@ -161,8 +306,8 @@ function popupText(obj) {
         else if (obj.properties.betaling_k === 1) {
             str += 'Der kræves betaling for faciliteten. Information herom bør kunne findes påfølgende link: ' + obj.properties.link + ' ';
         }
-        else {
-            console.log('Hit else in if (obj.properties.betaling_k !== null), value: ' + obj.properties.betaling_k);
+        else { /*
+            console.log('Hit else in if (obj.properties.betaling_k !== null), value: ' + obj.properties.betaling_k); */
         }
     }
 
@@ -178,217 +323,89 @@ function popupText(obj) {
 }
 
 
-// Function that controls the popup.
-function onEachFeature(feature, layer) {
-    if (feature.properties && feature.properties.popupContent) {
-        layer.bindPopup(feature.properties.popupContent, {
-            maxHeight: 100});
+// Visually toggles the data
+function toggleData(dataLayer, filterVal) {
+
+    // Showing the data.
+    if (filterVal === 'grayscale(1)') {
+        facilityLayerGroup.addLayer(dataLayer);
+        console.log('CLICKED');
+
+    } else if (filterVal === 'grayscale(0)') {
+        facilityLayerGroup.removeLayer(dataLayer);
+        console.log('UNCLICKED');
+
+    } else {
+        console.log(filterVal);
+        console.error('ERROR CODE 4: filterVal does not match any acceptable value! \n Value of filterVal: ' + filterVal + '\n');
     }
 }
 
 
-// Making a facility class
-class Facility {
-    constructor(data) {
-        this.type = 'FeatureCollection';
-        this.features = data.features;
-    }
-
-    addPointToLayer(facilName, leafletIconVar) {
-        this.features.forEach((element) => {
-            popupText(element);
-        });
-
-        let layer = L.geoJSON(this, {
-            pointToLayer: function (feature, latlng) {
-                return L.marker(latlng, {icon: leafletIconVar});
-            },
-            onEachFeature: onEachFeature
-        });
-
-        // Adding the layer to the facility object.
-        facilObj[facilName] = layer;
-    }
-
-    addPolygonToLayer(facilName, leafletIconVar) {
-        // TODO Create a popup text function for polygons here
-        this.features.forEach((element) => {
-            popupText(element);
-        });
-
-        facilObj[facilName] = L.geoJSON(this, {
-            style: {
-                weight: 1.5,
-                color: '#000000',
-                opacity: 1,
-                fillColor: '#156e2d',
-                fillOpacity: 0.7
-            },
-            onEachFeature: onEachFeature
-        });
-
-    }
-
-    addLineToLayer(facilName) {
-        // TODO create a popup text function for lines here
-    }
-}
-
-// Getting data from GeoFa
-// TODO rewrite this to comply with polygon layers too.
-async function getGeofaData(facGroup, facilTyK) {
-    let url = `https://geofa.geodanmark.dk/api/v2/sql/fkg?q=SELECT geometri,off_kode,navn,beskrivels,lang_beskr,ansvar_org,kontak_ved,vandhane_k,betaling_k,book_k,saeson_k,antal_pl,link,saeson_bem,saeson_st,saeson_sl FROM ${facGroup} WHERE facil_ty_k='${facilTyK}'&format=geojson&geoformat=geojson&srs=4326`;
-
-    try {
-        let response = await fetch(url);
-        return await response.json();
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-// Rendering the data from GeoFA
-async function renderGeofaData(facilName, facGroup, facilTyK, LeafletIconVar) {
-    let data = await getGeofaData(facGroup, facilTyK);
-    let facil = new Facility(data);
-
-    if (facGroup === 'fkg.t_5800_fac_pkt') {
-        facil.addPointToLayer(facilName, LeafletIconVar);
-    }
-    else if (facGroup === 'fkg.t_5801_fac_fl') {
-        facil.addPolygonToLayer(facilName, LeafletIconVar);
-    }
-    else {
-        console.log('ERROR: unacceptable facGroup! \n value of facGroup: ' + facGroup + '\n');
-    }
-
-}
+// Adding an event listener to an icon.
+function addIconEventListener(facObj) {
+    document.querySelector(facObj.html.id).addEventListener('click', () => {
+        let iconEl = document.querySelector(facObj.html.id);
+        let filterVal = getComputedStyle(iconEl).getPropertyValue('filter');
 
 
-
-/****************************************************
- *** Getting all the data from the GeoFA database ***
- ****************************************************/
-
-/*** Points ***/
-renderGeofaData('baalhytte', 'fkg.t_5800_fac_pkt', 3091, bhIcon);
-renderGeofaData('baalplads', 'fkg.t_5800_fac_pkt', 1022, bpIcon); // This seems to work at random. Sometimes returning, "t is undefined."
-renderGeofaData('friTeltning', 'fkg.t_5800_fac_pkt', 3071, ftIcon);
-renderGeofaData('fritFiskeri', 'fkg.t_5800_fac_pkt', 2171, ffIcon);
-
-renderGeofaData('hkLund', 'fkg.t_5800_fac_pkt', 3081, hkIcon);
-renderGeofaData('nationalpark', 'fkg.t_5800_fac_pkt', 2121, ntnParkIcon);
-renderGeofaData('naturpark', 'fkg.t_5800_fac_pkt', 2111, ntIcon);
-renderGeofaData('shelter', 'fkg.t_5800_fac_pkt', 3012, stIcon);
-
-renderGeofaData('spejderhytte', 'fkg.t_5800_fac_pkt', 1082, sdIcon);
-renderGeofaData('teltplads', 'fkg.t_5800_fac_pkt', 3031, tpIcon);
-renderGeofaData('toervejrsrum', 'fkg.t_5800_fac_pkt', 1132, tvIcon);
-renderGeofaData('vandpost', 'fkg.t_5800_fac_pkt', 1222, vpIcon);
-
-renderGeofaData('wc', 'fkg.t_5800_fac_pkt', 1012, waterClosetIcon);
-
-
-/*** Polygons ***/
-renderGeofaData('friTeltning_fl', 'fkg.t_5801_fac_fl', 3071, ftIcon);
-
-
-
-/*************************************
- *** Handling the icons as buttons ***
- *************************************/
-
-// Displaying the relevant data and greyscaling the icon if needed
-function toggleData(iconID, iconLayerName, iconFlLayerName) {
-    let iconEl = document.querySelector(iconID);
-
-    console.log(getComputedStyle(iconEl).getPropertyValue('filter'));
-
-    if (getComputedStyle(iconEl).getPropertyValue('filter') === 'grayscale(1)') {
-        iconEl.style.filter = 'grayscale(0)';
-        facilLayerGroup.addLayer(facilObj[iconLayerName]);
-
-        // Making it so that polygons also will be added
-        if (iconFlLayerName) {
-            facilLayerGroup.addLayer(facilObj[iconFlLayerName]);
+        for (let prop in facObj.Leaflet.geoJSON) {
+            toggleData(facObj.Leaflet.geoJSON[prop], filterVal);
         }
-        console.log('A layer has been added.');
 
-    } else if (getComputedStyle(iconEl).getPropertyValue('filter') === 'grayscale(0)') {
-        iconEl.style.filter = 'grayscale(1)';
-        facilLayerGroup.removeLayer(facilObj[iconLayerName]);
+        if (filterVal === 'grayscale(1)') {
+            iconEl.style.filter = 'grayscale(0)';
 
-        // Making it so that polygons also will be removed.
-        if (iconFlLayerName) {
-            facilLayerGroup.removeLayer(facilObj[iconFlLayerName]);
-        }
-        console.log('A layer has been removed.');
-    }
-    else {
-        console.log('Dangling else in toggleData()');
-    }
-}
+        } else if (filterVal === 'grayscale(0)') {
+            iconEl.style.filter = 'grayscale(1)';
 
-
-// Helper function for adding an event listener
-function iconEventListener(iconID, iconLayerName, iconFlLayerName) {
-    document.querySelector(iconID).addEventListener('click', () => {
-        if (iconFlLayerName) {
-            toggleData(iconID, iconLayerName, iconFlLayerName);
         } else {
-            toggleData(iconID, iconLayerName);
+            console.error('EROOR CODE 5: filterVal does not match any acceptable value! \n Value of filterVal: ' + filterVal + '\n');
         }
     });
 }
 
 
+// Adding all icon event listeners.
+function addAllIEL() {
+    for (let prop in facilityCollection) {
+        addIconEventListener(facilityCollection[prop]);
+    }
+}
 
-/***********************
- *** Event listeners ***
- ***********************/
 
-/*** ROW 1 ***/
-// Bålhytte icon
-iconEventListener('#baalhytteIcon', 'baalhytte');
+/********************
+ *** CONSTRUCTION ***
+ ********************/
 
-// Bugs out seemingly at random "TypeError: t is undefined" Minor tests on this has been concluded.
-// The reason for the bug might be due to the assets not yet being loaded, when activating.
-// Bålplads Icon
-iconEventListener('#baalpladsIcon', 'baalplads');
+// Row 0
+new FacilityCollectionElement('baalhytte', 'baalhytteIconSVG.svg', [fac_pkt_FRO], 3091);
+new FacilityCollectionElement('baalplads', 'baalpladsIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 1022);
+new FacilityCollectionElement('friTeltning', 'friTeltningIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 3071);
+new FacilityCollectionElement('fritFiskeri', 'fritFiskeriIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 2171);
 
-// TODO remember to add the other, "fri teltning," areas, as this one does only inlcude one.
-// Fri teltning
-iconEventListener('#friTeltningIcon', 'friTeltning', 'friTeltning_fl');
+// Row 1
+new FacilityCollectionElement('hkLund', 'haengekoejelundIconSVG.svg', [fac_pkt_FRO], 3081);
+new FacilityCollectionElement('nationalpark', 'nationalparkIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 2121);
+new FacilityCollectionElement('naturpark', 'naturparkIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 2111);
+new FacilityCollectionElement('shelter', 'shelterSVG.svg', [fac_pkt_FRO], 3012);
 
-// Frit fiskeri
-iconEventListener('#fritFiskeriIcon', 'fritFiskeri');
+// Row 2
+new FacilityCollectionElement('spejderhytte', 'spejderhytteIconSVG.svg', [fac_pkt_FRO], 1082);
+new FacilityCollectionElement('teltplads', 'teltPladsIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 3031);
+new FacilityCollectionElement('toervejrsrum', 'toervejrsrum:madpakkehusIconSVG.svg', [fac_pkt_FRO], 1132);
+new FacilityCollectionElement('vandpost', 'vandpostIconSVG.svg', [fac_pkt_FRO], 1222);
 
-/*** ROW 2 ***/
-// Hængekøjelund
-iconEventListener('#hkLundIcon', 'hkLund');
+// Row 3
+new FacilityCollectionElement('toilet', 'wcSVG.svg', [fac_pkt_FRO], 1012);
+new FacilityCollectionElement('vandrerute', 'vandreruteIconSVG.svg', [fac_li_FRO], 5);
+new FacilityCollectionElement('motionsrute', 'motionsruteIconSVG.svg', [fac_li_FRO], 6);
+new FacilityCollectionElement('rekreativSti', 'rekreativStiIconSVG.svg', [fac_li_FRO], 11);
 
-// Nationalpark
-iconEventListener('#nationalparkIcon', 'nationalpark');
+// Fetching all data from the GeoFA database
+for (let prop in facilityCollection) {
+    renderGeoFAdata(facilityCollection[prop]);
+}
 
-// Naturpark
-iconEventListener('#naturparkIcon', 'naturpark'); // TODO Consider removing this as it is empty
 
-// Shelter
-iconEventListener('#shelterIcon', 'shelter');
-
-/*** ROW 3***/
-// Spejderhytte
-iconEventListener('#spejderhytteIcon', 'spejderhytte');
-
-// Teltplads
-iconEventListener('#teltpladsIcon', 'teltplads')
-
-// Tørvejrsrum/madpakkehus
-iconEventListener('#tmIcon','toervejrsrum');
-
-// Vandpost
-iconEventListener('#vandpostIcon', 'vandpost');
-
-/*** ROW 4***/
-// WC
-iconEventListener('#wcIcon', 'wc');
+console.log(facilityCollection);

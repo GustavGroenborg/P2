@@ -3,7 +3,7 @@ let directionsLayerGroup = L.layerGroup().addTo(map);
 let directionsArr = [];
 
 
-// Directions class
+// Directions class.
 class GeojsonDirections {
     constructor(name, routesArr) {
         this.type = "Feature";
@@ -26,7 +26,7 @@ class GeojsonDirections {
 }
 
 
-// Connecting the waypoints with the route
+// Connecting the waypoints with the route.
 function connectEnds(startCoordArr, endCoordArr) {
     // This constructor like function is created in this scope, because it will only be used in this scope.
     let ConnectEnds = (coordArr) => {
@@ -42,17 +42,18 @@ function connectEnds(startCoordArr, endCoordArr) {
         };
     }
 
-    // Defining the style of the connecting ends linestring
+    // Defining the style of the connecting ends linestring.
     let style = {
         dashArray: [3, 7],
         color: '#cc0000',
+        weight: 2,
+
         fill: true,
         fillColor: '#ef0a0a',
-        fillOpacity: 0.8,
-        zIndex: 2000
+        fillOpacity: 0.8
     };
 
-    // Initiating the start and end
+    // Initiating the start and end.
     let connectStart = ConnectEnds(startCoordArr);
     let connectEnd = ConnectEnds(endCoordArr);
 
@@ -65,9 +66,10 @@ function connectEnds(startCoordArr, endCoordArr) {
     directionsLayerGroup.addLayer(directionsArr[directionsArr.length - 1]);
 }
 
-// Requesting directions
+
+// Requesting directions.
 async function getDirections(startCoordsArr, endCoordsArr) {
-    if (usrWP.length > 1) {
+    if (usrWPCollection.length > 1) {
         let query = await fetch(
             `https://api.mapbox.com/directions/v5/mapbox/walking/${startCoordsArr};${endCoordsArr}?steps=true&geometries=geojson&overview=full&access_token=${mapboxAccessToken}`,
             {method: 'GET'}
@@ -87,5 +89,29 @@ async function getDirections(startCoordsArr, endCoordsArr) {
         let routeEnd = await route[route.length - 1];
         connectEnds([startCoordsArr, routeStart], [endCoordsArr, routeEnd]);
 
+    }
+}
+
+
+// Removing directions.
+function removeDirections() {
+    // Removing all the layers.
+    directionsLayerGroup.clearLayers();
+
+    // Deleting all contents of the array.
+    directionsArr.splice(0);
+}
+
+
+// Updating directions.
+function updateDirections() {
+    // Removing all existing directions.
+    removeDirections();
+
+    // Getting new directions.
+    if (usrWPCollection.length > 1) {
+        for (let i = 1; i < usrWPCollection.length; i++) {
+            getDirections(usrWPCollection[i - 1].geoJSON.geometry.coordinates, usrWPCollection[i].geoJSON.geometry.coordinates);
+        }
     }
 }
