@@ -1,3 +1,6 @@
+// Importing some variables to make this work on Github...
+import { facilityCollection } from ./JS./GeoFAHandling.js';
+
 // Hiding the Leaflet zoom controls
 document.querySelector('.leaflet-control-zoom').style.display = 'none';
 
