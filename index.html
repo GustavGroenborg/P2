@@ -17,8 +17,38 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
             integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
             crossorigin=""></script>
+    
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-X44N8VJ9BE"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-X44N8VJ9BE');
+    </script>
 </head>
 <body>
+    <!-- Simple, "cookie," popup -->
+    <script>
+        (function() {
+            if (!confirm('Denne hjemmeside, bruges til at teste mit universitets projekt. ' +
+                'Der samles derfor data om dit besøg gennem Google Analytics. ' +
+                'Jeg skal udelukkende bruge dataene til at måle hvilke funktioner der er populære, ' +
+                'samt at se hvor mange besøgende der er. ' +
+                'Der bliver målt følgende ting:\n' +
+                '   1. Sidevisninger\n' +
+                '   2. Udgående klik\n' +
+                '      - Dette er når du klikker på et link, på denne hjemmeside, som medfører, at du forlader hjemmesiden.\n' +
+                '   3. Fildownloads\n' +
+                '      - Det registreres, hver gang du downloader en fil fra denne hjemmeside.\n'))
+            {
+                document.head.remove();
+                document.body.remove();
+            }
+        })();
+    </script>
+    
     <div id="mapv1"></div>
     <div id="menuPane"></div>
 
