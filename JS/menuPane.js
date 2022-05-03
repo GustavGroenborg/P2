@@ -393,8 +393,6 @@ function addDistance(coordArr1, coordArr2) {
     let latLng1 = L.latLng(coordArr1[1], coordArr1[0]);
     let latLng2 = L.latLng(coordArr2[1], coordArr2[0]);
 
-    console.log(map.distance(latLng1, latLng2));
-
     totalDistance += (map.distance(latLng1, latLng2)/1000);
     updateTotalDistance();
 }
