@@ -94,7 +94,7 @@ function menuDropDown(menuId, dropDownId) {
         // Showing the menu
         dropDownBtn.style.transform = 'rotate(-180deg)';
         menuEl.style.display = 'inline-block';
-        menuEl.parentElement.style.height = '40vh';
+        menuEl.parentElement.style.height = '35vh';
     }
 }
 
