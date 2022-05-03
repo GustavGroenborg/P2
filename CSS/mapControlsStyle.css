@@ -1,0 +1,19 @@
+#mapControlsContainer {
+    width: 50px;
+
+    padding: 3px;
+    position: fixed;
+    right: 7px;
+    top: 7px;
+
+    z-index: 2400;
+}
+
+.mapControlsEl {
+    filter: grayscale(1);
+}
+
+.mapControlsEl:hover {
+    /* Shadow heavily inspired by example made by w3schools.com link: https://www.w3schools.com/css/css3_shadows.asp */
+    filter: drop-shadow(0 0.1em 0.1em rgba(0,0,0,0.2)) drop-shadow(0 0.01em 0.3em rgba(0,0,0,0.19))!important;
+}

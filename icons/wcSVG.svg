@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<!-- Created with Vectornator (http://vectornator.io/) -->
+<svg height="100%" stroke-miterlimit="10" style="fill-rule:nonzero;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;" version="1.1" viewBox="0 0 48 48" width="100%" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:vectornator="http://vectornator.io" xmlns:xlink="http://www.w3.org/1999/xlink">
+<metadata>
+<vectornator:setting key="IsTimeLapseWatermarkDisabled" value="false"/>
+<vectornator:setting key="UndoHistoryDisabled" value="true"/>
+<vectornator:setting key="VNDimensionsVisible" value="true"/>
+<vectornator:setting key="VNSnapToGuides" value="true"/>
+<vectornator:setting key="WDCMYKEnabledKey" value="false"/>
+<vectornator:setting key="WDDisplayWhiteBackground" value="false"/>
+<vectornator:setting key="WDDynamicGuides" value="false"/>
+<vectornator:setting key="WDGuidesVisible" value="true"/>
+<vectornator:setting key="WDIsolateActiveLayer" value="false"/>
+<vectornator:setting key="WDOutlineMode" value="false"/>
+<vectornator:setting key="WDRulersVisible" value="true"/>
+<vectornator:setting key="WDSnapToEdges" value="false"/>
+<vectornator:setting key="WDSnapToGrid" value="false"/>
+<vectornator:setting key="WDSnapToPoints" value="false"/>
+<vectornator:setting key="WDUnits" value="Pixels"/>
+</metadata>
+<defs>
+<clipPath id="TextBounds">
+<rect height="29.062" width="43.271" x="2.3645" y="9.46899"/>
+</clipPath>
+</defs>
+<g id="Layer-1" vectornator:layerName="Layer 1">
+<path d="M2.70333 1L45.2967 1C46.2374 1 47 1.76261 47 2.70333L47 45.2967C47 46.2374 46.2374 47 45.2967 47L2.70333 47C1.76261 47 1 46.2374 1 45.2967L1 2.70333C1 1.76261 1.76261 1 2.70333 1Z" fill="#609744" fill-rule="evenodd" opacity="1" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.47"/>
+<g fill="#000000" opacity="1" stroke="none">
+<path clip-path="url(#TextBounds)" d="M27.2654 14.9163L27.2654 15.3679C26.8341 15.3679 26.4841 15.4452 26.2156 15.5999C25.947 15.7545 25.6907 16.0434 25.4465 16.4666C25.2838 16.7514 25.0274 17.4309 24.6775 18.5051L20.0632 31.8474L19.575 31.8474L15.803 21.2639L12.0554 31.8474L11.616 31.8474L6.69653 18.1023C6.33032 17.0769 6.09839 16.4706 6.00073 16.2834C5.83797 15.9742 5.61621 15.7443 5.33545 15.5938C5.05469 15.4432 4.67424 15.3679 4.19409 15.3679L4.19409 14.9163L10.322 14.9163L10.322 15.3679L10.0291 15.3679C9.59774 15.3679 9.26815 15.4656 9.04028 15.6609C8.81242 15.8562 8.69849 16.0922 8.69849 16.3689C8.69849 16.6537 8.87752 17.3088 9.2356 18.3342L12.4949 27.6238L15.2415 19.7258L14.7532 18.3342L14.3625 17.2234C14.1917 16.8165 14.0004 16.4584 13.7888 16.1492C13.683 15.9945 13.5528 15.8643 13.3982 15.7585C13.1947 15.6121 12.9913 15.5063 12.7878 15.4412C12.6332 15.3923 12.3891 15.3679 12.0554 15.3679L12.0554 14.9163L18.5007 14.9163L18.5007 15.3679L18.0613 15.3679C17.6056 15.3679 17.2719 15.4656 17.0603 15.6609C16.8487 15.8562 16.7429 16.1207 16.7429 16.4543C16.7429 16.8694 16.926 17.5937 17.2922 18.6272L20.4661 27.6238L23.6155 18.5051C23.9736 17.496 24.1526 16.7961 24.1526 16.4055C24.1526 16.2183 24.0936 16.0434 23.9756 15.8806C23.8576 15.7179 23.7091 15.6039 23.53 15.5388C23.2208 15.4249 22.818 15.3679 22.3215 15.3679L22.3215 14.9163L27.2654 14.9163Z" fill-rule="evenodd"/>
+<path clip-path="url(#TextBounds)" d="M42.512 14.5378L42.8904 20.1653L42.512 20.1653C42.0074 18.4807 41.2872 17.2681 40.3513 16.5276C39.4154 15.787 38.2924 15.4167 36.9822 15.4167C35.8835 15.4167 34.8907 15.6955 34.0037 16.2529C33.1166 16.8104 32.4188 17.6995 31.9102 18.9202C31.4015 20.1409 31.1472 21.6586 31.1472 23.4734C31.1472 24.9708 31.3873 26.2688 31.8674 27.3674C32.3476 28.4661 33.0698 29.3083 34.0342 29.8943C34.9985 30.4802 36.0992 30.7732 37.3362 30.7732C38.4104 30.7732 39.3585 30.5433 40.1804 30.0835C41.0024 29.6237 41.9057 28.7102 42.8904 27.343L43.2688 27.5872C42.4387 29.0601 41.4703 30.1384 40.3635 30.822C39.2568 31.5056 37.9425 31.8474 36.4207 31.8474C33.6781 31.8474 31.5541 30.8302 30.0486 28.7957C28.9255 27.282 28.364 25.4998 28.364 23.449C28.364 21.797 28.7343 20.2792 29.4749 18.8958C30.2154 17.5123 31.2347 16.4401 32.5327 15.6792C33.8307 14.9183 35.2488 14.5378 36.7869 14.5378C37.9832 14.5378 39.1632 14.8308 40.3269 15.4167C40.6687 15.5958 40.9128 15.6853 41.0593 15.6853C41.2791 15.6853 41.4703 15.608 41.6331 15.4534C41.8446 15.2336 41.9952 14.9285 42.0847 14.5378L42.512 14.5378Z" fill-rule="evenodd"/>
+</g>
+</g>
+</svg>
