@@ -111,6 +111,142 @@ function swapArrEl(arr, el1Idx, el2Idx) {
 }
 
 
+// Validating Degrees-Minutes-Seconds.
+function validateDMS(inputValue) {
+    let safeString = '';
+
+    for (let i = 0; i < inputValue.length; i++) {
+        switch (inputValue[i]) {
+            case 'N':
+                safeString += inputValue[i];
+                break;
+            case 'S':
+                safeString += inputValue[i];
+                break;
+            case 'E':
+                safeString += inputValue[i];
+                break;
+            case 'W':
+                safeString += inputValue[i];
+                break;
+            case '\xB0':
+                safeString += inputValue[i];
+                break;
+            case '\'':
+                safeString += inputValue[i];
+                break;
+            case '"':
+            case '.':
+                safeString += inputValue[i];
+                break;
+            case '\u00A0':
+                break;
+
+            default:
+                if (Number.isNaN(Number.parseInt(inputValue[i])) === false) {
+                    safeString += Number.parseInt(inputValue[i]);
+
+                } else {
+                    console.error('ERROR CODE 10: Illegal character\n Character: ' + inputValue[i]);
+                }
+                break;
+        }
+
+    }
+
+    return safeString;
+}
+
+
+// Validating Decimal Degrees.
+function validateDD(inputValue) {
+    let safeString = '';
+
+    for (let i = 0; i < inputValue.length; i++) {
+        if (Number.isNaN(Number.parseInt(inputValue[i])) === false) {
+            safeString += Number.parseInt(inputValue[i]);
+
+        } else if (inputValue[i] === ',' || inputValue[i] === '.') {
+            safeString += inputValue[i];
+
+        } else {
+            console.error('ERROR CODE 11: Illegal character! \n Character is: ' + inputValue[i]);
+        }
+    }
+
+    return safeString;
+}
+
+
+// Validating a coordinate.
+function validateCoord(inputValue) {
+    if (dmsStatus === true) {
+        return validateDMS(inputValue);
+
+    } else {
+        return validateDD(inputValue);
+    }
+}
+
+
+// Converting a string to the latlng format.
+function stringToLatLng(str) {
+    console.log(str);
+    console.log(typeof str);
+    let input = str.split(',');
+    return {'lat': input[0], 'lng': input[1] };
+}
+
+
+// Adding input from the coordinates input.
+function addCoordInput(event, usrWPObj) {
+    if (event.code === 'Enter') {
+        // Validating the input.
+        let inputCoord = validateCoord(document.querySelector('#' + event.target.id).value);
+        console.log(inputCoord);
+        let latlng = (dmsStatus === true) ? dmsStringToDdLatlng(inputCoord) : stringToLatLng(inputCoord);
+        console.log(latlng);
+
+        // Setting the new coordinate values.
+        usrWPObj.geoJSON.geometry.coordinates = [latlng.lng, latlng.lat];
+        usrWPObj.Leaflet.moveMarker(latlng);
+
+        // Updating the directions.
+        updateDirections();
+    }
+}
+
+
+// Updating all cords to DMS.
+function updateCoordsTypes() {
+    let coordList = document.querySelector('#coordListDiv').children;
+
+    for (let i = 0; i < coordList.length; i++) {
+        if (coordList[i].id) {
+            let curCoord;
+            let curVal = coordList[i].firstChild.value;
+
+            // Incoming coordinates is in DD.
+            if (dmsStatus === true) {
+                // Converting to a DD object.
+                curCoord = stringToLatLng(validateDD(curVal));
+                // Converting to a DMS
+                curCoord = ddToDms(curCoord);
+                // Converting DMS to a string.
+                curCoord = latlngToString(curCoord);
+
+
+            } else if (dmsStatus === false) { // Incoming coordinates is in DMS.
+                curCoord = latlngToString(dmsStringToDdLatlng(validateDMS(curVal)));
+            }
+
+            coordList[i].firstChild.value = curCoord;
+
+        }
+    }
+}
+
+
 // Adding all necessary controls
 function addCoordControls(usrWPObj) {
     let parent = document.querySelector(usrWPObj.html.id);
@@ -209,7 +345,6 @@ function addCoordControls(usrWPObj) {
     });
 
 
-
     // Adding the up and down buttons to the relevant container.
     upDownContainer.appendChild(upBtn);
     upDownContainer.appendChild(downBtn);
@@ -219,9 +354,6 @@ function addCoordControls(usrWPObj) {
 
     // Adding the controls container to the parent.
     parent.appendChild(controlsContainer);
-
-
-
 }
 
 
@@ -243,8 +375,21 @@ function addCoordEl(usrWPObj) {
     /*** Configuring the coordinate element ***/
     coord.className = 'coordsStyle';
     coord.type = 'text';
-    coord.name = usrWPObj.html.idName + 'Coord';
-    coord.value = coordinatesArr[1].toFixed(5).toString() + ', ' + coordinatesArr[0].toFixed(5).toString();
+    coord.id = usrWPObj.html.idName + 'Input';
+    // Setting the coordinate value.
+     if (dmsStatus === true) {
+        setTimeout(() => { // Timeout added to make sure that, Leaflet layer is added in usrWPObj.
+            coord.value = latlngToString(ddToDms(usrWPObj.Leaflet.getLatLng()));
+        }, 5);
+
+    } else if (dmsStatus === false) {
+        coord.value = coordinatesArr[1].toFixed(3).toString() + ', ' + coordinatesArr[0].toFixed(3).toString();
+    }  // FIXME
+
+    // Adding an event listener to the coordinate element.
+    coord.addEventListener('keyup', (event) => {
+        addCoordInput(event, usrWPObj);
+    });
 
     // Adding the coordinate to the coordinate element container.
     elContainer.appendChild(coord);
@@ -272,7 +417,7 @@ addChildToParent('#menuPane', 'div', 'coordPane', 'menuPaneStyle');
 addChildToParent('#coordPane', 'div', 'coordPaneHeader', 'menuPaneHeader');
 
 // Adding the coordinates pane header headline
-addMenuPaneHeadLine('#coordPaneHeader', 'menuPaneHeadline', 'Coordinates');
+addMenuPaneHeadLine('#coordPaneHeader', 'menuPaneHeadline', 'Waypoints');
 
 // Adding the drop-down icon to the coordinates pane header
 addIconToMenuHeader('#coordPaneHeader', 'coordPaneDropDownIcon', 'dropDownIcon', dropDownIcon());
@@ -297,8 +442,9 @@ function addFacilityIcon(parentRowId, facObj) {
     // Configuring the new icon.
     newIcon.src = facObj.iconPath;
     newIcon.id = facObj.html.idName;
+    newIcon.title = facObj.html.title;
     newIcon.className = 'facilIcon';
-    newIcon.style.filter = 'grayscale(100%)';
+    newIcon.style.filter = 'grayscale(100%) blur(2px)';
 
     // Setting the id of the new icon.
     facObj.html.id = '#' + newIcon.id;
@@ -419,9 +565,22 @@ document.querySelector('#facilPaneDropDownIcon').addEventListener('click', () =>
 
 // Showing the location of the mouse.
 map.on('mousemove', (event) => {
-    document.querySelector('#mouseLoc').textContent = latlngToString(event.latlng);});
+    let coord = event.latlng;
+    let cordStr;
+
+    if (dmsStatus === true) {
+        cordStr = latlngToString(ddToDms(coord));
+
+    } else if (dmsStatus === false) {
+        cordStr = latlngToString(coord);
+    }
+
+    document.querySelector('#mouseLoc').textContent = cordStr;
+});
 
 
 // Switching between DMS and DD.
 document.querySelector('#mouseLoc').addEventListener('click', () => {
-    dmsStatus = !dmsStatus; });
+    dmsStatus = !dmsStatus;
+    updateCoordsTypes();
+});

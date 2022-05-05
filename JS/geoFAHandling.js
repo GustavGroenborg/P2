@@ -10,6 +10,10 @@ const fac_fl_SEL = fac_pkt_SEL;
 const fac_li_FRO = 'fkg.t_5802_fac_li';
 const fac_li_SEL = 'geometri,statusKode,off_kode,rute_uty_k,navn,navndels,straekn_nr,afm_rute_k,laengde,beskrivels,lang_beskr,ansvar_org,kontak_ved,belaegn_k,svaerhed_k,kategori_k,hierarki_k,folde_link,kvalitet_k';
 
+const popupOptions = {
+    maxHeight: 100,
+    pane: 'popupPane'
+};
 
 let facilityCollection = {};
 let facilityLayerGroup = L.layerGroup().addTo(map);
@@ -39,6 +43,7 @@ class FacilityCollectionElement {
         };
         this.html = {
             'idName': name + 'Icon',
+            'title': name
         };
         this.dataLoaded = false;
 
@@ -67,7 +72,7 @@ class FacilityCollectionElement {
                 pointToLayer: function (feature, latlng) {
                     return L.marker(latlng, {
                         icon: leafletIcon,
-                        pane: 'facility'
+                        pane: 'facility',
                     });
                 },
 
@@ -103,7 +108,7 @@ class FacilityCollectionElement {
                     color: '#f5a700',
                     weight: 3
                 },
-                onEachFeature: onEachFeature
+                onEachFeature: onEachLineFeature
             });
 
         } else {
@@ -152,6 +157,11 @@ async function renderGeoFAdata(facObj) {
 
         // Registering that the data has been loaded.
         facObj.dataLoaded = !!(data);
+
+        // TODO remove blur here.
+        if (facObj.dataLoaded === true) {
+            document.querySelector('#' + facObj.html.idName).style.filter = 'blur(0) grayscale(1)';
+        }
 
         // Initiating the necessary Leaflet data.
         facObj.initLeafletProp(objTable);
@@ -206,13 +216,83 @@ async function renderGeoFAdata(facObj) {
 
 }
 
+// Adding a popup.
+function addPopup(feature, layer) {
+    if (feature.properties && feature.properties.popupContent) {
+        layer.bindPopup(feature.properties.popupContent, popupOptions);
+    }
+}
+
 
 // Function that controls the popup.
 function onEachFeature(feature, layer) {
-    if (feature.properties && feature.properties.popupContent) {
-        layer.bindPopup(feature.properties.popupContent, {
-            maxHeight: 100});
+    addPopup(feature, layer);
+}
+
+// Function that controls popup, AND highlighting for trails.
+function onEachLineFeature(feature, layer) {
+    let hlStyleOn = {
+        color: '#e402f5',
+        weight: 6,
+        opacity: .7
+    };
+    let hlStleOff = {
+        color: '#f5a700',
+        weight: 3,
+        opacity: 1
+    };
+
+    // Controlling the popup.
+    onEachFeature(feature, layer);
+
+    // Highlighting the layer on mouse over.
+    layer.on('mouseover', () => {
+        layer.setStyle(hlStyleOn);
+
+    });
+
+    layer.on('mouseout', () => {
+        layer.setStyle(hlStleOff);
+    });
+
+    // Highlighting the feature on double click.
+    layer.on('dblclick', highlightDblClickOn);
+
+    // Turning on highlighting by double-clicking.
+    function highlightDblClickOn() {
+        // Stopping the map from zooming on double click.
+        map.doubleClickZoom.disable();
+
+        layer.off('mouseout');
+
+        layer.setStyle(hlStyleOn);
+
+        layer.on('dblclick', highlightDblclickOff);
+
+        // Allowing the user to zoom by double-clicking again.
+        setTimeout(() => {
+            map.doubleClickZoom.enable();
+        }, 50);
     }
+
+    // Turning off highlighting by double-clicking.
+    function highlightDblclickOff() {
+        // Stopping the map from zooming on double click.
+        map.doubleClickZoom.disable();
+
+        layer.setStyle(hlStleOff);
+
+        // Readding the turn off highlight on mouse out.
+        layer.on('mouseout', () => {
+            layer.setStyle(hlStleOff);
+        });
+
+        // Removing the turn off highlight with dbl click.
+        layer.off('dblclick');
+
+        layer.on('dblclick', highlightDblClickOn);
+    }
+
 }
 
 
@@ -327,10 +407,10 @@ function popupText(obj) {
 
 
 // Visually toggles the data
-function toggleData(dataLayer, filterVal) {
+function toggleData(dataLayer, dataObj, filterVal) {
 
     // Showing the data.
-    if (filterVal === 'grayscale(1)') {
+    if (filterVal === 'grayscale(1)' || filterVal === 'blur(0px) grayscale(1)') {
         facilityLayerGroup.addLayer(dataLayer);
 
     } else if (filterVal === 'grayscale(0)') {
@@ -346,22 +426,33 @@ function toggleData(dataLayer, filterVal) {
 // Adding an event listener to an icon.
 function addIconEventListener(facObj) {
     document.querySelector(facObj.html.id).addEventListener('click', () => {
-        let iconEl = document.querySelector(facObj.html.id);
-        let filterVal = getComputedStyle(iconEl).getPropertyValue('filter');
+        if (facObj.dataLoaded === true) {
+            let iconEl = document.querySelector(facObj.html.id);
+            let filterVal = getComputedStyle(iconEl).getPropertyValue('filter');
 
 
-        for (let prop in facObj.Leaflet.geoJSON) {
-            toggleData(facObj.Leaflet.geoJSON[prop], filterVal);
-        }
+            for (let prop in facObj.Leaflet.geoJSON) {
+                toggleData(facObj.Leaflet.geoJSON[prop], facObj.Leaflet.geoJSON, filterVal);
 
-        if (filterVal === 'grayscale(1)') {
-            iconEl.style.filter = 'grayscale(0)';
+                // Unbinding popups, if mapMode is on.
+                if (mapMode === true) {
+                    let superLayer = facObj.Leaflet.geoJSON[prop]._layers;
 
-        } else if (filterVal === 'grayscale(0)') {
-            iconEl.style.filter = 'grayscale(1)';
+                    for (let layer in superLayer) {
+                        superLayer[layer].unbindPopup();
+                    }
+                }
+            }
 
-        } else {
-            console.error('EROOR CODE 5: filterVal does not match any acceptable value! \n Value of filterVal: ' + filterVal + '\n');
+            if (filterVal === 'grayscale(1)' || filterVal === 'blur(0px) grayscale(1)') {
+                iconEl.style.filter = 'grayscale(0)';
+
+            } else if (filterVal === 'grayscale(0)') {
+                iconEl.style.filter = 'grayscale(1)';
+
+            } else {
+                console.error('EROOR CODE 5: filterVal does not match any acceptable value! \n Value of filterVal: ' + filterVal + '\n');
+            }
         }
     });
 }
@@ -403,10 +494,8 @@ new FacilityCollectionElement('vandrerute', 'vandreruteIconSVG.svg', [fac_li_FRO
 new FacilityCollectionElement('motionsrute', 'motionsruteIconSVG.svg', [fac_li_FRO], 6);
 new FacilityCollectionElement('rekreativSti', 'rekreativStiIconSVG.svg', [fac_li_FRO], 11);
 
+
 // Fetching all data from the GeoFA database
 for (let prop in facilityCollection) {
     renderGeoFAdata(facilityCollection[prop]);
 }
-
-
-console.log(facilityCollection);

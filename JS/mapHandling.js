@@ -53,6 +53,9 @@ map.getPane('facility').style.zIndex = 800;
 map.createPane('direction');
 map.getPane('direction').style.zIndex = 900;
 
+map.createPane('popupPane');
+map.getPane('popupPane').style.zIndex = 1100;
+
 // Adding the user waypoint layer group to the map.
 usrWPLayerGroup.addTo(map);
 
@@ -87,6 +90,76 @@ function ddToDms(latlngObj) {
 }
 
 
+// Converts Decimal Degrees Minutes to Decimal Degrees and returns an object.
+function dmsToDd(dmsObj) {
+    let latlng = {};
+
+    if (dmsObj.lat.d && dmsObj.lat.m && dmsObj.lat.s
+        && dmsObj.lng.d && dmsObj.lng.m && dmsObj.lng.s) {
+        // Calculating the latitude and longitude in DD.
+        latlng.lat = dmsObj.lat.d + dmsObj.lat.m + dmsObj.lat.s;
+        latlng.lng = dmsObj.lng.d + dmsObj.lng.m + dmsObj.lng.s;
+
+    } else {
+        latlng.lat = 56.20746;
+        latlng.lng = 10.48096;
+        console.error('ERROR CODE 8: Invalid dmsObj! \n Value of dmsObj:');
+        console.error(dmsObj);
+        console.error('ERROR CODE 8: latlng has been set to: ');
+        console.error(latlng);
+    }
+
+    return latlng;
+}
+
+
+// Converts Decimal Degrees to Degrees-Minutes-Seconds.
+function dmsStringToDdLatlng(latlngStr) {
+    console.log(latlngStr);
+    //let strArr = latlngStr.split(/[\xB0'"\u00A0]+/);
+    let latIdx = latlngStr.indexOf('N') + 1;
+    let lat = latlngStr.slice(0, latIdx);
+    let lng = latlngStr.slice(latIdx);
+
+    let latArr = lat.split(/[\xB0'"]+/);
+    let lngArr = lng.split(/[\xB0'"]+/);
+
+    let latlngDMS = { 'lat': {}, 'lng': {} };
+    let latlng;
+
+    // Determining the latitude.
+    latlngDMS.lat.d = Number.parseInt(latArr[0]);
+    latlngDMS.lat.m = Number.parseInt(latArr[1]) / 60;
+    latlngDMS.lat.s = (Number.parseFloat(latArr[2]) / 3600);
+
+    // Determining the longitude.
+    latlngDMS.lng.d = Number.parseInt(lngArr[0]);
+    latlngDMS.lng.m = Number.parseInt(lngArr[1]) / 60;
+    latlngDMS.lng.s = (Number.parseFloat(lngArr[2]) / 3600);// Determining the longitude.
+
+    // Converting latitude DMS to DD.
+    latlng = dmsToDd(latlngDMS);
+
+    // Checking if latitude is North or South.
+    if (latArr[latArr.length - 1] === 'S') {
+        latlng.lat *= -1;
+
+    } else if (latArr[latArr.length - 1] !== 'N') {
+        console.error('ERROR CODE 7: Latitude is neither "N" or "S"! \n Value of latitude: ' + latArr[latArr.length - 1]);
+    }
+    
+    // Checking if the longitude is East or West.
+    if (lngArr[lngArr.length - 1] === 'W') {
+        latlng.lng *= -1;
+        
+    } else if (lngArr[lngArr.length - 1] !== 'E') {
+        console.error('ERROR CODE 9: Longitude is netier "E" or "W"! \n Value of longitude: ' + lngArr[lngArr.length - 1]);
+    }
+
+    return latlng;
+}
+
+
 // Converts latlng obj to a nice-looking string
 function latlngToString(latlng) {
     let lat = latlng.lat;
@@ -94,10 +167,9 @@ function latlngToString(latlng) {
     let latlngStr, latStr, lngStr;
 
     if (dmsStatus) {
-        let dms = ddToDms(latlng);
+        latStr =  lat.d.toString() + "\xB0" + " " +  lat.m.toString() + "' " +  lat.s.toFixed(3).toString() + "\"" + ( lat.d > 0 ? "N" : "S");
+        lngStr =  lng.d.toString() + "\xB0" + " " +  lng.m.toString() + "' " +  lng.s.toFixed(3).toString() + "\"" + ( lng.d > 0 ? "E" : "W");
 
-        latStr = dms.lat.d.toString() + "\xB0" + " " + dms.lat.m.toString() + "' " + dms.lat.s.toFixed(5).toString() + "\"" + (dms.lat.d > 0 ? "N" : "S");
-        lngStr = dms.lng.d.toString() + "\xB0" + " " + dms.lng.m.toString() + "' " + dms.lng.s.toFixed(5).toString() + "\"" + (dms.lng.d > 0 ? "E" : "W");
         latlngStr = latStr + '\u00A0 \u00A0' + lngStr;
 
         return latlngStr;
@@ -121,13 +193,21 @@ function latlngToString(latlng) {
 class UsrGeoJSONWP {
     constructor(WPNo, latlng)
     {
+        let popupStr;
+        if (dmsStatus === true) {
+            popupStr = latlngToString(ddToDms(latlng));
+
+        } else if (dmsStatus === false) {
+            popupStr = latlngToString(latlng);
+        }
+
         this.geoJSON = {
             'type': 'Feature',
             'properties': {
                 'name': 'usrWP' + WPNo,
                 'no': WPNo,
                 'latlng': latlng,
-                'popupContent': 'This waypoint is located at ' + latlngToString(latlng)
+                'popupContent': 'This waypoint is located at ' + popupStr
             },
             'geometry': {
                 'type': 'Point',
@@ -226,7 +306,18 @@ class UsrGeoJSONWP {
 
                     // Updating the coordinates in the this.geojson.geometry.coordinates property.
                     let newLatlng = marker.getLatLng();
+                    let coordEl = document.querySelector('#' + self.html.idName).firstChild;
                     self.geoJSON.geometry.coordinates = [newLatlng.lng, newLatlng.lat];
+
+                    // Setting the value in the coordinate pane.
+                    if (dmsStatus === true ) {
+                        console.log(ddToDms(newLatlng));
+                        console.log(latlngToString(ddToDms(newLatlng)));
+                        coordEl.value =latlngToString(ddToDms(newLatlng));
+
+                    } else if (dmsStatus === false) {
+                        coordEl.value = latlngToString(newLatlng);
+                    }
 
                     // Removing the event listeners that allows the marker to be dragged.
                     map.off('mousemove', circleMarkerDrag);
@@ -261,6 +352,7 @@ class UsrGeoJSONWP {
 // Adding a new user waypoint.
 function addUsrWP(event) {
     if (mapMode === true) {
+
         // Initiating the new user defined waypoint. Increment wpNo to always ensure a unique waypoint name.
         let usrWP = new UsrGeoJSONWP(wpNo++, event.latlng);
 
@@ -268,7 +360,6 @@ function addUsrWP(event) {
         usrWP.addLeafletProps();
 
         usrWPLayerGroup.addLayer(usrWPCollection[usrWPCollection.length - 1].Leaflet);
-        //addCoordEl(usrWPCollection[usrWPCollection.length - 1]);
 
         // Retrieving the directions.
         let usrWPCLength = usrWPCollection.length;

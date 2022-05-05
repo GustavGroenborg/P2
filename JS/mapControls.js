@@ -34,7 +34,21 @@ function addMapModeToggle() {
 function toggleMapMode() {
     document.querySelector("#mapModeToggle").style.filter = (mapMode) ? "grayscale(100%)" : "grayscale(0)";
 
-    mapMode = !mapMode;
+    if (mapMode === true) {
+        // Binding all popups.
+        facilityLayerGroup.bindAllPopups(popupOptions);
+
+        mapMode = false;
+
+    } else {
+        // Unbinding all popups.
+        facilityLayerGroup.unbindAllPopups();
+
+        mapMode = true;
+    }
+
+
+    //mapMode = !mapMode;
 }
 
 

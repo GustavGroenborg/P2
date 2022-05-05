@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Nature Maps V0</title>
+    <title>AAU P2 projekt | GCRG21 </title>
 
     <link rel="stylesheet" href="CSS/style.css">
     <link rel="stylesheet" href="CSS/menuPane.css">
@@ -21,16 +21,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-X44N8VJ9BE"></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-X44N8VJ9BE');
-    </script>
-</head>
-<body>
-    <!-- Simple, "cookie," popup -->
-    <script>
+        /*** Simple cookie popup ***/
         (function() {
             if (!confirm('Denne hjemmeside, bruges til at teste mit universitets projekt. ' +
                 'Der samles derfor data om dit besøg gennem Google Analytics. ' +
@@ -43,17 +34,41 @@
                 '   3. Fildownloads\n' +
                 '      - Det registreres, hver gang du downloader en fil fra denne hjemmeside.\n'))
             {
-                document.head.remove();
-                document.body.remove();
+                // Configuring the cookie message.
+
+                let noCookieMsg = document.createElement('img');
+                noCookieMsg.src = 'icons/noCookieIconSVG.svg';
+                noCookieMsg.zIndex = 3000;
+                noCookieMsg.style = 'display: flex; justify-content: center;';
+
+                noCookieMsg.addEventListener('click', () => {
+                    location.href = 'https://GustavGroenborg.github.io/P2';
+                });
+
+                setTimeout(() => {
+                    document.body.remove();
+                    document.querySelector('html').appendChild(noCookieMsg);
+                }, 5);
+
+            } else {
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+
+                gtag('config', 'G-X44N8VJ9BE');
             }
         })();
     </script>
+</head>
+<body>
+
     
     <div id="mapv1"></div>
     <div id="menuPane"></div>
 
 
     <!-- The mapping script MUST be after the map-div! -->
+    <script src="JS/leafletPlugins.js"></script>
     <script src="JS/mapHandling.js"></script>
     <script src="JS/directionsHandling.js"></script>
     <script src="JS/geoFAHandling.js"></script>

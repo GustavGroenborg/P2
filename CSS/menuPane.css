@@ -190,7 +190,7 @@
 }
 
 .deleteBtnClass:hover, .upBtnClass:hover, .downBtnClass:hover {
-    filter: brightness(60%);
+    filter: brightness(40%);
 }
 
 
@@ -213,6 +213,10 @@
     width: 3em;
     height: 3em;
     margin: .5em;
+}
+
+.facilIcon:hover {
+    content: attr(title);
 }
 
 
