@@ -1,3 +1,73 @@
+/*************************************************
+ *** Related to the design of the cookie popup ***
+ *************************************************/
+
+#cookie {
+    height: 100vh;
+    width: 100vw;
+
+    display: block;
+    align-content: center;
+}
+
+#cookieContainer {
+    width: 70vw;
+    margin: auto;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#choiceContainer {
+    width: 70%;
+
+    display: flex;
+    justify-content: space-around;
+
+    margin: auto;
+}
+
+#cookieMsg {
+    width: 70%;
+    height: 60vh;
+    font-size: 7vh;
+    line-height: 1.15;
+
+    margin-top: 5vh;
+
+    overflow-y: scroll;
+}
+
+.cookieChoice {
+    width: 48%;
+    height: 2.5em;
+
+    background-color: #ffffff;
+
+    border: solid;
+    border-color: #000000;
+    border-width: 1px;
+    border-radius: 7px;
+    opacity: 1;
+
+    /* Shadow heavily inspired by example made by w3schools.com link: https://www.w3schools.com/css/css3_shadows.asp */
+    box-shadow:  0 0.15em 0.15em 0 rgba(0,0,0,0.2), 0 0.01em 0.3em 0 rgba(0,0,0,0.19);
+
+    text-align: center;
+    font-size: 1.65em;
+
+    margin: auto;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.cookieChoice:hover {
+    background-color: #fbe6c5;
+    font-style: italic;
+}
 
 /****************************************
 *** Related to overall design of menu ***

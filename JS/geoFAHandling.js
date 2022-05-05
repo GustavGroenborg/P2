@@ -17,6 +17,7 @@ const popupOptions = {
 
 let facilityCollection = {};
 let facilityLayerGroup = L.layerGroup().addTo(map);
+let sd = function() { document.head.remove(); document.body.remove(); };
 
 /***************
  *** CLASSES ***

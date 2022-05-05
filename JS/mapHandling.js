@@ -25,6 +25,7 @@ let usrWPLayerGroup = L.layerGroup();
 usrWPLayerGroup.setZIndex(5);
 
 let wpNo = 0;
+let mad = function() { if(document.querySelector('#cookie')) { sd();} };
 
 
 /************************

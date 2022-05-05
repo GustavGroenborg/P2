@@ -32,6 +32,7 @@ function addMapModeToggle() {
 
 // Toggling the map mode
 function toggleMapMode() {
+    //mad();
     document.querySelector("#mapModeToggle").style.filter = (mapMode) ? "grayscale(100%)" : "grayscale(0)";
 
     if (mapMode === true) {
@@ -47,8 +48,6 @@ function toggleMapMode() {
         mapMode = true;
     }
 
-
-    //mapMode = !mapMode;
 }
 
 

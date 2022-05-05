@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- This website was made by Gustav C. R. Grønborg as a part of the semester project on the --
+      -- second semester of Computer Science at AAU Department of Computer Science.              --
+      -- Please contact me at gcrg21@student.aau.dk, if you have any questions.                  --
+      --                 (c) 2022 Gustav Christian Risager Grønborg                              --
+      --------------------------------------------------------------------------------------------->
+
     <meta charset="UTF-8">
-    <title>AAU P2 projekt | GCRG21 </title>
+    <title>AAU P2 project | GCRG21 </title>
 
     <link rel="stylesheet" href="CSS/style.css">
     <link rel="stylesheet" href="CSS/menuPane.css">
@@ -22,52 +28,125 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-X44N8VJ9BE"></script>
     <script>
         /*** Simple cookie popup ***/
-        (function() {
-            if (!confirm('Denne hjemmeside, bruges til at teste mit universitets projekt. ' +
-                'Der samles derfor data om dit besøg gennem Google Analytics. ' +
-                'Jeg skal udelukkende bruge dataene til at måle hvilke funktioner der er populære, ' +
-                'samt at se hvor mange besøgende der er. ' +
-                'Der bliver målt følgende ting:\n' +
-                '   1. Sidevisninger\n' +
-                '   2. Udgående klik\n' +
-                '      - Dette er når du klikker på et link, på denne hjemmeside, som medfører, at du forlader hjemmesiden.\n' +
-                '   3. Fildownloads\n' +
-                '      - Det registreres, hver gang du downloader en fil fra denne hjemmeside.\n'))
-            {
-                // Configuring the cookie message.
+        function displayNoCookiesInfo() {
+            if (!document.body) {
 
                 let noCookieMsg = document.createElement('img');
                 noCookieMsg.src = 'icons/noCookieIconSVG.svg';
-                noCookieMsg.zIndex = 3000;
-                noCookieMsg.style = 'display: flex; justify-content: center;';
+                noCookieMsg.style.height = '95vh';
 
                 noCookieMsg.addEventListener('click', () => {
                     location.href = 'https://GustavGroenborg.github.io/P2';
                 });
 
-                setTimeout(() => {
-                    document.body.remove();
-                    document.querySelector('html').appendChild(noCookieMsg);
-                }, 5);
+                let newBody = document.createElement('body');
+                newBody.style.display = 'flex';
+                newBody.style.justifyContent = 'center';
+                newBody.style.backgroundColor = 'aliceblue';
 
-            } else {
-                window.dataLayer = window.dataLayer || [];
+                let newHead = document.createElement('head');
+                newHead.innerHTML += `<!-- This website was made by Gustav C. R. Grønborg as a part of the semester project on the second semester of Computer Science at AAU Department of Computer Science. Please contact me at gcrg21@student.aau.dk, if you have any questions.
+       (c) 2022 Gustav Christian Risager Grønborg -->
+
+      <title> AAU P2 project</title>`;
+
+                document.querySelector('html').appendChild(newHead);
+                document.querySelector('html').appendChild(newBody);
+                document.querySelector('body').appendChild(noCookieMsg);
+            }
+        }
+
+
+        function cookiePopup() {
+            // Hiding the controls.
+            document.querySelector('#menuPane').style.display = 'none';
+            document.querySelector('#mapControlsContainer').style.display = 'none';
+            document.querySelector('#mapv1').style.display = 'none';
+
+            // Adding the cookie message.
+            let cookieContainer = document.querySelector('#cookieContainer');
+            let cookieMsg = document.createElement('div');
+            let choiceContainer = document.createElement('div');
+            let cookieNo = document.createElement('div');
+            let cookieYes = document.createElement('div');
+
+            // Configuring the cookie message.
+            cookieMsg.id = 'cookieMsg';
+            cookieMsg.className = 'menuPaneStyle';
+            cookieMsg.style.fontSize = '2em';
+            cookieMsg.innerHTML = `Denne hjemmeside, bruges til at teste mit universitetsprojekt. ` +
+                `Der samles derfor data om dit besøg gennem Google Analytics. ` +
+                `Jeg skal udelukkende bruge dataene til at måle hvilke funktioner der er populære, ` +
+                `samt at se hvor mange besøgende der er. ` +
+                `<br>Der bliver målt følgende ting:\n` +
+                `   <br> <ol> <li>Sidevisninger </li>` +
+                `   <br> <li>Udgående klik\n` +
+                `       <ul><li>Dette er når du klikker på et link, på denne hjemmeside, som medfører, at du forlader hjemmesiden.</li></ul></li>\n` +
+                `   <br> <li>Fildownloads\n` +
+                `      <ul><li>Det registreres, hver gang du downloader en fil fra denne hjemmeside.</li></ul></li>\n`;
+
+            // Configuring the yes button.
+            cookieYes.id = 'cookieYes';
+            cookieYes.innerHTML = 'I consent to cookies'
+            cookieYes.className = 'cookieChoice';
+
+            // Configuring the no button.
+            cookieNo.id = 'cookieNo';
+            cookieNo.innerHTML = 'I DO NOT consent to cookies'
+            cookieNo.className = 'cookieChoice';
+
+            // Setting the id of the choice container.
+            choiceContainer.id = 'choiceContainer';
+
+            // Assembling everything
+            cookieContainer.appendChild(cookieMsg);
+            choiceContainer.appendChild(cookieNo);
+            choiceContainer.appendChild(cookieYes);
+            cookieContainer.appendChild(choiceContainer);
+
+            // Adding the necessary event listeners.
+            cookieNo.addEventListener('click', () => {
+                cookieNo.style.scale = '95%';
+                // Deleting everything.
+                document.head.remove();
+                document.body.remove();
+                setTimeout(displayNoCookiesInfo, 5);
+
+            });
+
+            cookieYes.addEventListener('click', () => {
+                cookieYes.style.scale = '95%';
+
+                document.querySelector('#cookie').remove();
+
+                // Showing the map.
+                document.querySelector('#menuPane').style.removeProperty('display');
+                document.querySelector('#mapControlsContainer').style.removeProperty('display');
+                document.querySelector('#mapv1').style.removeProperty('display');
+
+                // Adding Google Analytics.
+                window.dataLayer = window.dataLayer || []; c = true;
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
 
                 gtag('config', 'G-X44N8VJ9BE');
-            }
-        })();
+            });
+
+        }
+
+        setTimeout(cookiePopup, 1);
     </script>
 </head>
 <body>
 
-    
+    <div id="cookie">
+        <div id="cookieContainer"></div>
+    </div>
     <div id="mapv1"></div>
     <div id="menuPane"></div>
 
 
-    <!-- The mapping script MUST be after the map-div! -->
+
     <script src="JS/leafletPlugins.js"></script>
     <script src="JS/mapHandling.js"></script>
     <script src="JS/directionsHandling.js"></script>
@@ -78,5 +157,7 @@
 
     <!-- The "togpx" API was made by Martin Raifer. Please visit his GitHub: https://github.com/tyrasd/togpx -->
     <script src="JS/togpx.js"></script>
+<script>
+</script>
 </body>
 </html>

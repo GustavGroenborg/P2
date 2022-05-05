@@ -379,7 +379,7 @@ function addCoordEl(usrWPObj) {
     // Setting the coordinate value.
      if (dmsStatus === true) {
         setTimeout(() => { // Timeout added to make sure that, Leaflet layer is added in usrWPObj.
-            coord.value = latlngToString(ddToDms(usrWPObj.Leaflet.getLatLng()));
+            coord.value = latlngToString(ddToDms(usrWPObj.Leaflet.getMarkerLatLng()));
         }, 5);
 
     } else if (dmsStatus === false) {

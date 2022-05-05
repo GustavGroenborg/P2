@@ -47,13 +47,14 @@ L.Layer.include({
     },
 
     // Getting the latlng object.
-    getLatLng: function() {
+    getMarkerLatLng: function() {
         let latlng;
 
         for (let layer in this._layers) {
             latlng = this._layers[layer]._latlng;
         }
 
+        console.log(latlng);
         return latlng;
     }
 });
