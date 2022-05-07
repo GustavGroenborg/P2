@@ -10,14 +10,52 @@ const fac_fl_SEL = fac_pkt_SEL;
 const fac_li_FRO = 'fkg.t_5802_fac_li';
 const fac_li_SEL = 'geometri,statusKode,off_kode,rute_uty_k,navn,navndels,straekn_nr,afm_rute_k,laengde,beskrivels,lang_beskr,ansvar_org,kontak_ved,belaegn_k,svaerhed_k,kategori_k,hierarki_k,folde_link,kvalitet_k';
 
+// TODO consider removing this in the final version of the hand-in.
+/*
 const popupOptions = {
     maxHeight: 100,
     pane: 'popupPane'
-};
+}; */
+function determinePopupOptions() {
+    let ua = navigator.userAgent.toLowerCase();
+
+    if (ua.indexOf('iphone') !== -1 || ua.indexOf('android') !== -1) {
+        // Making the popup font-size larger.
+        document.styleSheets[0].insertRule('.leaflet-popup-content { font-size: 2em; } ');
+
+        return {
+            fontSize: 12,
+            maxHeight: 200,
+            pane: 'popupPane'
+        }
+
+    } else {
+            return {
+                maxHeight: 100,
+                pane: 'popupPane'
+            }
+        }
+}
+let popupOptions = determinePopupOptions();
+console.log(popupOptions);
 
 let facilityCollection = {};
 let facilityLayerGroup = L.layerGroup().addTo(map);
 let sd = function() { document.head.remove(); document.body.remove(); };
+
+/*** Customising to mobile devices. ***/
+// TODO consider removing this in the final version of the hand-in.
+function lineStyle() {
+    let ua = navigator.userAgent.toLowerCase();
+    let uaWeight = (ua.indexOf('iphone') !== -1 || ua.indexOf('android') !== -1) ? 5 : 3;
+
+    return {
+        color: '#f5a700',
+        weight: uaWeight,
+        opacity: .7
+    }
+
+}
 
 /***************
  *** CLASSES ***
@@ -103,12 +141,11 @@ class FacilityCollectionElement {
                 popupText(element);
             });
 
+
+
             // TODO fix the style of the lines. It looks rather ugly...
             this.Leaflet.geoJSON.li = L.geoJSON(this.GeoFA.geoJSON.li, {
-                style: {
-                    color: '#f5a700',
-                    weight: 3
-                },
+                style: lineStyle(),
                 onEachFeature: onEachLineFeature
             });
 
@@ -232,16 +269,21 @@ function onEachFeature(feature, layer) {
 
 // Function that controls popup, AND highlighting for trails.
 function onEachLineFeature(feature, layer) {
+    let ua = navigator.userAgent.toLowerCase();
+    let uaWeight = (ua.indexOf('iphone') !== -1 || ua.indexOf('android') !== -1) ? 6 : 3;
     let hlStyleOn = {
         color: '#e402f5',
-        weight: 6,
-        opacity: .7
+        weight: uaWeight * 1.5, // Original version, value: 6
+        opacity: .5 // Original version, value: .7
     };
+    // TODO consider removing this in the final version.
+    /*
     let hlStleOff = {
         color: '#f5a700',
-        weight: 3,
-        opacity: 1
-    };
+        weight: 5, // Original version, value: 3
+        opacity: .7 // Original version, value: 1
+    }; */
+    let hlStyleOff = lineStyle();
 
     // Controlling the popup.
     onEachFeature(feature, layer);
@@ -253,7 +295,7 @@ function onEachLineFeature(feature, layer) {
     });
 
     layer.on('mouseout', () => {
-        layer.setStyle(hlStleOff);
+        layer.setStyle(hlStyleOff);
     });
 
     // Highlighting the feature on double click.
@@ -281,11 +323,11 @@ function onEachLineFeature(feature, layer) {
         // Stopping the map from zooming on double click.
         map.doubleClickZoom.disable();
 
-        layer.setStyle(hlStleOff);
+        layer.setStyle(hlStyleOff);
 
         // Readding the turn off highlight on mouse out.
         layer.on('mouseout', () => {
-            layer.setStyle(hlStleOff);
+            layer.setStyle(hlStyleOff);
         });
 
         // Removing the turn off highlight with dbl click.
@@ -302,7 +344,7 @@ function popupText(obj) {
     let str = '';
 
     if (obj.properties.navn !== null) {
-        str += obj.properties.navn + '. ';
+        str += '<b>' + obj.properties.navn + '</b><br> ';
     }
 
     if (obj.properties.beskrivels !== null) {
