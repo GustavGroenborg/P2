@@ -32,15 +32,13 @@ function dropDownIcon() {
 
 /*** Removing the necessary properties depending on user OS ***/
 (function() {
+    // TODO Consider removing this in the final version, before hand-in.
     if (navigator.userAgent.indexOf('Safari') !== -1 || navigator.userAgent.indexOf('iPhone') !== -1) {
-        console.log('HELLO!?');
         // Removing the css facilIcon:hover property.
         for (let i in document.styleSheets) {
-            console.log('Iterating! i: ' + i);
             for (let j in document.styleSheets[i].cssRules) {
                 if (document.styleSheets[i].cssRules[j].selectorText === '.facilIcon:hover') {
                     document.styleSheets[i].deleteRule(j);
-                    console.log('Deleting a rule');
                     break;
                 }
             }
@@ -466,6 +464,14 @@ function addFacilityIcon(parentRowId, facObj) {
     newIcon.className = 'facilIcon';
     newIcon.style.filter = 'grayscale(100%) blur(2px)';
 
+    // TODO Consider removing this in the final version, before hand-in.
+    let ua = navigator.userAgent.toLowerCase();
+    // Making the icon larger, if the user is on mobile.
+    if (ua.indexOf('iphone') !== -1 || ua.indexOf('android') !== -1) {
+        newIcon.style.width = '6em';
+        newIcon.style.height = '6em';
+    }
+
     // Setting the id of the new icon.
     facObj.html.id = '#' + newIcon.id;
 
@@ -476,13 +482,16 @@ function addFacilityIcon(parentRowId, facObj) {
 
 // Adds all necessary rows and all available facilities.
 function constructFacilityRows() {
+    // TODO Consider removing this in the final version, before hand-in.
+    let ua = navigator.userAgent.toLowerCase();
+    let maxFacilityNo = (ua.indexOf('iphone') !== -1 || ua.indexOf('android') !== -1) ? 2 : 4;
     let facilityNo = 0;
     let rowNo = 0;
     let rowIdName, rowId;
 
     for (let prop in facilityCollection) {
         // Increment the relevant variables when four icons are present in the current row.
-        if (facilityNo === 4) {
+        if (facilityNo === maxFacilityNo) {
             facilityNo = 0;
             rowNo++;
         }
