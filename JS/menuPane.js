@@ -30,6 +30,26 @@ function dropDownIcon() {
 }
 
 
+/*** Removing the necessary properties depending on user OS ***/
+(function() {
+    if (navigator.userAgent.indexOf('Safari') !== -1 || navigator.userAgent.indexOf('iPhone') !== -1) {
+        console.log('HELLO!?');
+        // Removing the css facilIcon:hover property.
+        for (let i in document.styleSheets) {
+            console.log('Iterating! i: ' + i);
+            for (let j in document.styleSheets[i].cssRules) {
+                if (document.styleSheets[i].cssRules[j].selectorText === '.facilIcon:hover') {
+                    document.styleSheets[i].deleteRule(j);
+                    console.log('Deleting a rule');
+                    break;
+                }
+            }
+        }
+    }
+
+})();
+
+
 
 /**********************************
  *** ELEMENT CREATION FUNCTIONS ***

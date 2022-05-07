@@ -117,7 +117,7 @@
             cookieYes.addEventListener('click', () => {
                 cookieYes.style.scale = '95%';
 
-                document.querySelector('#cookie').remove();
+                document.querySelector('#cookiePopup').remove();
 
                 // Showing the map.
                 document.querySelector('#menuPane').style.removeProperty('display');
@@ -139,7 +139,7 @@
 </head>
 <body>
 
-    <div id="cookie">
+    <div id="cookiePopup">
         <div id="cookieContainer"></div>
     </div>
     <div id="mapv1"></div>
