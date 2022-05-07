@@ -142,7 +142,8 @@
 
 .menuPaneHeadline {
     width: 70%;
-    height: 20%;
+    min-height: 3em;
+    max-height: 10%;
 
     text-align: left;
     font-family: "Times New Roman";
@@ -272,6 +273,7 @@
 #facilPaneDropDown {
     width: 100%;
     min-height: 70%;
+    max-height: 90%;
 
     overflow-y: scroll;
 
