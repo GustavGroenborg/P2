@@ -271,7 +271,7 @@
 
 #facilPaneDropDown {
     width: 100%;
-    height: 70%;
+    min-height: 70%;
 
     overflow-y: scroll;
 
