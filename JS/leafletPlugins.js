@@ -4,7 +4,9 @@
 
 /*** Additions to the Layer Group Class ***/
 L.LayerGroup.include({
-    // Unbinding all popups.
+    /**
+     * Unbinding all popups, from a GeoJSON feature group.
+     */
     unbindAllPopups: function () {
         for (let superLayer in this._layers) {
             let subLayer = this._layers[superLayer]._layers;
@@ -16,7 +18,10 @@ L.LayerGroup.include({
     },
 
 
-    // Binding all popups.
+    /**
+     * Binding all popups to a GeoJSON feature group.
+     * @param popupOptions: Object with options for the popups.
+     */
     bindAllPopups: function (popupOptions) {
         for (let superLayer in this._layers) {
             let subLayer = this._layers[superLayer]._layers;
@@ -37,7 +42,10 @@ L.LayerGroup.include({
 
 /*** Additions to the Layer class ***/
 L.Layer.include({
-    // Moving a circle marker.
+    /**
+     * Moving a Leaflet circle marker.
+     * @param latlng: Latlng object.
+     */
     moveMarker: function (latlng) {
         for (let layer in this._layers) {
             let marker = this._layers[layer];
@@ -46,7 +54,10 @@ L.Layer.include({
         }
     },
 
-    // Getting the latlng object.
+    /**
+     * Getting the latlng object of a Leaflet marker in a layer.
+     * @returns {*}: Latlng object of the marker.
+     */
     getMarkerLatLng: function() {
         let latlng;
 
@@ -54,7 +65,6 @@ L.Layer.include({
             latlng = this._layers[layer]._latlng;
         }
 
-        console.log(latlng);
         return latlng;
     }
 });

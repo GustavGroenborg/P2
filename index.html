@@ -28,6 +28,32 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-X44N8VJ9BE"></script>
     <script>
         /*** Simple cookie popup ***/
+
+        // Setting a cookie.
+        function setCookie() {
+            let curDate = new Date();
+            let lifeSpan = 30 * 24 * 60 * 60 * 1000; // Set to a month.
+            curDate.setTime(curDate.getTime() + (14 * 24 * 60 * 60 * 1000));
+
+            // Setting the cookie.
+            document.cookie = `cookieConsent=cookieAccepted; expires=${curDate.toUTCString()}; sameSite=Strict`;
+
+            // Setting cookie to true.
+            c = true;
+        }
+
+        function checkCookieConsent() {
+            if (document.cookie.indexOf('cookieAccepted') !== -1) {
+                c = true;
+                return true;
+
+            } else {
+                return false;
+            }
+        }
+
+
+        // Displaying the cookies declined popup.
         function displayNoCookiesInfo() {
             if (!document.body) {
 
@@ -57,6 +83,7 @@
         }
 
 
+        // Displaying the cookie popup.
         function cookiePopup() {
             // Hiding the controls.
             document.querySelector('#menuPane').style.display = 'none';
@@ -117,6 +144,9 @@
             cookieYes.addEventListener('click', () => {
                 cookieYes.style.scale = '95%';
 
+                // Setting a cookie.
+                setCookie();
+
                 document.querySelector('#cookiePopup').remove();
 
                 // Showing the map.
@@ -125,7 +155,7 @@
                 document.querySelector('#mapv1').style.removeProperty('display');
 
                 // Adding Google Analytics.
-                window.dataLayer = window.dataLayer || []; c = true;
+                window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
 
@@ -134,7 +164,9 @@
 
         }
 
-        setTimeout(cookiePopup, 1);
+        if (!checkCookieConsent()) {
+            setTimeout(cookiePopup, 10);
+        }
 
         /*** Alerting the user, that some features might not work properly if they are on MacOS Safari ***/
         (function () {
@@ -157,6 +189,8 @@
 
 
     <script src="JS/leafletPlugins.js"></script>
+    <script src="JS/coordConversions.js"></script>
+    <script src="JS/inputValidation.js"></script>
     <script src="JS/mapHandling.js"></script>
     <script src="JS/directionsHandling.js"></script>
     <script src="JS/geoFAHandling.js"></script>

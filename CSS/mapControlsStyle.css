@@ -17,3 +17,26 @@
     /* Shadow heavily inspired by example made by w3schools.com link: https://www.w3schools.com/css/css3_shadows.asp */
     filter: drop-shadow(0 0.1em 0.1em rgba(0,0,0,0.2)) drop-shadow(0 0.01em 0.3em rgba(0,0,0,0.19))!important;
 }
+
+
+.usrErr {
+    height: 15vh;
+    width: 20vw;
+    right: 70px;
+    padding: 3px;
+    position: absolute;
+
+    z-index: 3000;
+
+    border: solid;
+    border-color: #000000;
+    background-color: #dc143c;
+
+    font-family: "Times New Roman";
+    color: #000000;
+    font-size: 12pt;
+    text-align: left;
+
+    overflow-y: scroll;
+
+}

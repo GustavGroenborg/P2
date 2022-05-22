@@ -6,6 +6,11 @@ let directionsArr = [];
 
 // Directions class.
 class GeojsonDirections {
+    /**
+     * Creating a GeoJSON object containing a route.
+     * @param name: properties.name of the GeoJSON object.
+     * @param routesArr: Array containing the route.
+     */
     constructor(name, routesArr) {
         this.type = "Feature";
         this.properties = {
@@ -17,7 +22,9 @@ class GeojsonDirections {
         };
     }
 
-    // Adds the route to the map.
+    /**
+     * Adds this objects route to the map.
+     */
     addToMap() {
         let locArr = [this, L.geoJSON(this, {
             pane: 'direction',
@@ -33,7 +40,13 @@ class GeojsonDirections {
 }
 
 
-// Connecting the waypoints with the route.
+/**
+ * Connecting the end, and start, of a route, to the waypoints.
+ * @param startCoordArr: Array containing the starting coordinates of the route
+ * and the starting waypoint.
+ * @param endCoordArr: Array containing the end coordinates of the route
+ * and the ending waypoint.
+ */
 function connectEnds(startCoordArr, endCoordArr) {
     // This constructor like function is created in this scope, because it will only be used in this scope.
     let ConnectEnds = (coordArr) => {
@@ -77,17 +90,23 @@ function connectEnds(startCoordArr, endCoordArr) {
     directionsLayerGroup.addLayer(directionsArr[directionsArr.length - 1][1]);
 }
 
-// Fetching the directions.
+
+/**
+ * Fetching directions from the MapBox API.
+ * @param startCoordsArr: Array containing the first coordinate of the route.
+ * @param endCoordsArr: Array containing the last coordinate of the route.
+ * @returns {Promise<any>}: A route in JSON.
+ */
 async function fetchDirections(startCoordsArr, endCoordsArr) {
     let query = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/walking/${startCoordsArr};${endCoordsArr}?steps=true&geometries=geojson&overview=full&access_token=${mapboxAccessToken}`,
+        `https://api.mapbox.com/directions/v5/mapbox/walking/${startCoordsArr};${endCoordsArr}?steps=true&geometries=geojson&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`,
         {method: 'GET'}
     );
 
     return await query.json();
 }
 
-
+// TODO rewrite this to then.
 // Requesting directions.
 async function getDirections(startCoordsArr, endCoordsArr) {
     if (usrWPCollection.length > 1) {

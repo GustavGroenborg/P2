@@ -1,14 +1,14 @@
 /************************
  *** GLOBAL VARIABLES ***
  ************************/
-const fac_pkt_FRO = 'fkg.t_5800_fac_pkt';
-const fac_pkt_SEL = 'geometri,off_kode,navn,beskrivels,lang_beskr,ansvar_org,kontak_ved,vandhane_k,betaling_k,book_k,saeson_k,antal_pl,link,saeson_bem,saeson_st,saeson_sl F';
+const FAC_PKT_FRO = 'fkg.t_5800_fac_pkt';
+const FAC_PKT_SEL = 'geometri,off_kode,navn,beskrivels,lang_beskr,ansvar_org,kontak_ved,vandhane_k,betaling_k,book_k,saeson_k,antal_pl,link,saeson_bem,saeson_st,saeson_sl F';
 
-const fac_fl_FRO = 'fkg.t_5801_fac_fl';
-const fac_fl_SEL = fac_pkt_SEL;
+const FAC_FL_FRO = 'fkg.t_5801_fac_fl';
+const FAC_FL_SEL =  FAC_PKT_SEL;
 
-const fac_li_FRO = 'fkg.t_5802_fac_li';
-const fac_li_SEL = 'geometri,statusKode,off_kode,rute_uty_k,navn,navndels,straekn_nr,afm_rute_k,laengde,beskrivels,lang_beskr,ansvar_org,kontak_ved,belaegn_k,svaerhed_k,kategori_k,hierarki_k,folde_link,kvalitet_k';
+const FAC_LI_FRO = 'fkg.t_5802_fac_li';
+const FAC_LI_SEL = 'geometri,statusKode,off_kode,rute_uty_k,navn,navndels,straekn_nr,afm_rute_k,laengde,beskrivels,lang_beskr,ansvar_org,kontak_ved,belaegn_k,svaerhed_k,kategori_k,hierarki_k,folde_link,kvalitet_k';
 
 // TODO consider removing this in the final version of the hand-in.
 /*
@@ -37,7 +37,6 @@ function determinePopupOptions() {
         }
 }
 let popupOptions = determinePopupOptions();
-console.log(popupOptions);
 
 let facilityCollection = {};
 let facilityLayerGroup = L.layerGroup().addTo(map);
@@ -90,17 +89,12 @@ class FacilityCollectionElement {
         facilityCollection[this.name] = this;
     }
 
-    // NOTE addGeoFAData might be redundant
-    // Getting the data from the GeoFA database
-    addGeoFAData(dataFeatures) {
-        this.GeoFA.geoJSON.features = dataFeatures;
-    }
 
     // Initiating the relevant Leaflet properties.
     initLeafletProp(tableName) {
         let leafletIcon = this.Leaflet.icon;
 
-        if (tableName === fac_pkt_FRO) {
+        if (tableName === FAC_PKT_FRO) {
             // Creating the popup text
             this.GeoFA.geoJSON.pkt.features.forEach((element) => {
                 popupText(element);
@@ -119,7 +113,7 @@ class FacilityCollectionElement {
                 onEachFeature: onEachFeature
             });
 
-        } else if (tableName === fac_fl_FRO) {
+        } else if (tableName === FAC_FL_FRO) {
             // Creating the popup text
             this.GeoFA.geoJSON.fl.features.forEach((element) => {
                 popupText(element);
@@ -136,7 +130,7 @@ class FacilityCollectionElement {
                 onEachFeature: onEachFeature
             });
 
-        } else if (tableName === fac_li_FRO) {
+        } else if (tableName === FAC_LI_FRO) {
             this.GeoFA.geoJSON.li.features.forEach((element) => {
                 popupText(element);
             });
@@ -196,7 +190,6 @@ async function renderGeoFAdata(facObj) {
         // Registering that the data has been loaded.
         facObj.dataLoaded = !!(data);
 
-        // TODO remove blur here.
         if (facObj.dataLoaded === true) {
             document.querySelector('#' + facObj.html.idName).style.filter = 'blur(0) grayscale(1)';
         }
@@ -210,10 +203,10 @@ async function renderGeoFAdata(facObj) {
     for (let el of facObjTable) {
 
         // Determining which table it the relevant one.
-        if (el === fac_pkt_FRO) {
+        if (el === FAC_PKT_FRO) {
             // Determining SELECT, FROM and WHERE.
-            sqlSelect = fac_pkt_SEL;
-            sqlFrom = fac_pkt_FRO;
+            sqlSelect =  FAC_PKT_SEL;
+            sqlFrom = FAC_PKT_FRO;
             sqlWhere = `facil_ty_k='${facObj.GeoFA.code}'`;
 
             // Fetching the data
@@ -222,9 +215,9 @@ async function renderGeoFAdata(facObj) {
             // Initiating the data.
             initData( el, 'pkt');
 
-        } else if (el === fac_fl_FRO) {
-            sqlSelect = fac_fl_SEL;
-            sqlFrom = fac_fl_FRO;
+        } else if (el === FAC_FL_FRO) {
+            sqlSelect = FAC_FL_SEL;
+            sqlFrom = FAC_FL_FRO;
             sqlWhere = `facil_ty_k='${facObj.GeoFA.code}'`;
 
             // Fetching the data
@@ -233,9 +226,9 @@ async function renderGeoFAdata(facObj) {
             // Initiating the data.
             initData(el, 'fl');
 
-        } else if (el === fac_li_FRO) {
-            sqlSelect = fac_li_SEL;
-            sqlFrom = fac_li_FRO;
+        } else if (el === FAC_LI_FRO) {
+            sqlSelect = FAC_LI_SEL;
+            sqlFrom = FAC_LI_FRO;
             sqlWhere = `rute_ty_k='${facObj.GeoFA.code}'`;
 
             // Fetching the data
@@ -368,21 +361,15 @@ function popupText(obj) {
         } else if (vandhane_k === 1) {
             str += 'Der bør være en vandhane tilgængelig ved faciliteten. ';
         } else if (vandhane_k === 2) {
-            console.log('Case 2. Value of vandhane_k: ' + obj.properties.vandhane_k);
-            console.log(obj.properties);
-            console.log('\n');
+            str += 'Der bør være vandhane ved faciliteten, men den kan ikke' +
+                'forventes at være tilgængelig året rundt. ';
+
         } else if (vandhane_k === 3) {
             str += 'Det er ukendt om der er en vandhane tilgængelig ved faciliteten. ';
-        } else { /*
-            console.log('Hit default case in switch (obj.properties.vandhane_k). Value of vandhane_k: ' + obj.properties.vandhane_k);
-            console.log(obj.properties);
-            console.log('obj.properties.vandhane_k === 0 : ' + (obj.properties.vandhane_k === 0))
-
-            console.log('\n'); */
         }
     }
 
-    if (obj.properties.saeson_k !== null) {
+    if (obj.properties.saeson_k != null) {
         switch (obj.properties.saeson_k) {
             case 1:
                 str += 'Faciliteten har helårsåbent. ';
@@ -396,8 +383,6 @@ function popupText(obj) {
                 str += 'Sæsonåbningstider er ikke relevant for denne facilitet. ';
                 break;
             default:
-                //console.log('Hit default on switch (obj.properties.saeson_k), value: ' + obj.properties.saeson_k);
-                break;
         }
 
         if (obj.properties.saeson_bem !== null) {
@@ -420,8 +405,6 @@ function popupText(obj) {
                 str += 'Det er ukendt om faciliteten skal bookes. ';
                 break;
             default:
-                //console.log('Hit default on switch (obj.properties.book_k), value: ' + obj.properties.book_k);
-                break;
         }
     }
 
@@ -432,17 +415,34 @@ function popupText(obj) {
         else if (obj.properties.betaling_k === 1) {
             str += 'Der kræves betaling for faciliteten. Information herom bør kunne findes påfølgende link: ' + obj.properties.link + ' ';
         }
-        else { /*
-            console.log('Hit else in if (obj.properties.betaling_k !== null), value: ' + obj.properties.betaling_k); */
-        }
     }
 
     if (obj.properties.betaling_k === null && (obj.properties.link == "" || obj.properties.link === null)) {
         str += 'Der bør kunne findes flere informationer om faciliteten på følgende link: ' + obj.properties.link;
     }
 
-    //TODO remove this at some point
-    str += '\n The location of this facility is: ' + obj.geometry.coordinates;
+    if (obj.geometry.type === 'MultiLineString') {
+        try {
+            str += `<br> Denne rutes start-koordinat er: ${obj.geometry.coordinates[0][0][1].toFixed(4).toString()}, ${obj.geometry.coordinates[0][0][0].toFixed(4).toString()}` +
+                `<br> Denne rutes slut-koordinat er: ${obj.geometry.coordinates[0].at(-1)[1].toFixed(4).toString()}, ${obj.geometry.coordinates[0].at(-1)[0].toFixed(4).toString()}`;
+        } catch(e) {
+            /* Handling a known problem where a single route array is not,
+             * consistent with the other arrays. */
+            if (e.message === 'obj.geometry.coordinates[0][0] is undefined') {
+                str += `<br> Denne rutes start-koordinat er: ${obj.geometry.coordinates[1][0][1].toFixed(4).toString()}, ${obj.geometry.coordinates[1][0][0].toFixed(4).toString()}` +
+                    `<br> Denne rutes slut-koordinat er: ${obj.geometry.coordinates[1].at(-1)[1].toFixed(4).toString()}, ${obj.geometry.coordinates[1].at(-1)[0].toFixed(4).toString()}`;
+
+            } else {
+                console.log(e);
+                console.log(e.message);
+                console.log(obj)
+            }
+        }
+
+    } else if (obj.geometry.type !== 'MultiPolygon') {
+        if (obj.geometry.coordinates[0][1] === undefined) console.log(obj.geometry);
+        str += `<br> Dennes facilites koordinat er: ${obj.geometry.coordinates[0][1].toFixed(4).toString()}, ${obj.geometry.coordinates[0][0].toFixed(4).toString()}`;
+    }
 
     // Setting the contents of the popup content.
     obj.properties.popupContent = str;
@@ -514,28 +514,28 @@ function addAllIEL() {
  ********************/
 
 // Row 0
-new FacilityCollectionElement('baalhytte', 'baalhytteIconSVG.svg', [fac_pkt_FRO], 3091);
-new FacilityCollectionElement('baalplads', 'baalpladsIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 1022);
-new FacilityCollectionElement('friTeltning', 'friTeltningIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 3071);
-new FacilityCollectionElement('fritFiskeri', 'fritFiskeriIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 2171);
+new FacilityCollectionElement('baalhytte', 'baalhytteIconSVG.svg', [FAC_PKT_FRO], 3091);
+new FacilityCollectionElement('baalplads', 'baalpladsIconSVG.svg', [FAC_PKT_FRO, FAC_FL_FRO], 1022);
+new FacilityCollectionElement('friTeltning', 'friTeltningIconSVG.svg', [FAC_PKT_FRO, FAC_FL_FRO], 3071);
+new FacilityCollectionElement('fritFiskeri', 'fritFiskeriIconSVG.svg', [FAC_PKT_FRO, FAC_FL_FRO], 2171);
 
 // Row 1
-new FacilityCollectionElement('hkLund', 'haengekoejelundIconSVG.svg', [fac_pkt_FRO], 3081);
-new FacilityCollectionElement('nationalpark', 'nationalparkIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 2121);
-new FacilityCollectionElement('naturpark', 'naturparkIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 2111);
-new FacilityCollectionElement('shelter', 'shelterSVG.svg', [fac_pkt_FRO], 3012);
+new FacilityCollectionElement('hkLund', 'haengekoejelundIconSVG.svg', [FAC_PKT_FRO], 3081);
+new FacilityCollectionElement('nationalpark', 'nationalparkIconSVG.svg', [FAC_PKT_FRO, FAC_FL_FRO], 2121);
+new FacilityCollectionElement('naturpark', 'naturparkIconSVG.svg', [FAC_PKT_FRO, FAC_FL_FRO], 2111);
+new FacilityCollectionElement('shelter', 'shelterSVG.svg', [FAC_PKT_FRO], 3012);
 
 // Row 2
-new FacilityCollectionElement('spejderhytte', 'spejderhytteIconSVG.svg', [fac_pkt_FRO], 1082);
-new FacilityCollectionElement('teltplads', 'teltPladsIconSVG.svg', [fac_pkt_FRO, fac_fl_FRO], 3031);
-new FacilityCollectionElement('toervejrsrum', 'toervejrsrum:madpakkehusIconSVG.svg', [fac_pkt_FRO], 1132);
-new FacilityCollectionElement('vandpost', 'vandpostIconSVG.svg', [fac_pkt_FRO], 1222);
+new FacilityCollectionElement('spejderhytte', 'spejderhytteIconSVG.svg', [FAC_PKT_FRO], 1082);
+new FacilityCollectionElement('teltplads', 'teltPladsIconSVG.svg', [FAC_PKT_FRO, FAC_FL_FRO], 3031);
+new FacilityCollectionElement('toervejrsrum', 'toervejrsrum:madpakkehusIconSVG.svg', [FAC_PKT_FRO], 1132);
+new FacilityCollectionElement('vandpost', 'vandpostIconSVG.svg', [FAC_PKT_FRO], 1222);
 
 // Row 3
-new FacilityCollectionElement('toilet', 'wcSVG.svg', [fac_pkt_FRO], 1012);
-new FacilityCollectionElement('vandrerute', 'vandreruteIconSVG.svg', [fac_li_FRO], 5);
-new FacilityCollectionElement('motionsrute', 'motionsruteIconSVG.svg', [fac_li_FRO], 6);
-new FacilityCollectionElement('rekreativSti', 'rekreativStiIconSVG.svg', [fac_li_FRO], 11);
+new FacilityCollectionElement('toilet', 'wcSVG.svg', [FAC_PKT_FRO], 1012);
+new FacilityCollectionElement('vandrerute', 'vandreruteIconSVG.svg', [FAC_LI_FRO], 5);
+new FacilityCollectionElement('motionsrute', 'motionsruteIconSVG.svg', [FAC_LI_FRO], 6);
+new FacilityCollectionElement('rekreativSti', 'rekreativStiIconSVG.svg', [FAC_LI_FRO], 11);
 
 
 // Fetching all data from the GeoFA database

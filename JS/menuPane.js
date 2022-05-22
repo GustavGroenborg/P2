@@ -129,136 +129,104 @@ function swapArrEl(arr, el1Idx, el2Idx) {
 }
 
 
-// Validating Degrees-Minutes-Seconds.
-function validateDMS(inputValue) {
-    let safeString = '';
 
-    for (let i = 0; i < inputValue.length; i++) {
-        switch (inputValue[i]) {
-            case 'N':
-                safeString += inputValue[i];
-                break;
-            case 'S':
-                safeString += inputValue[i];
-                break;
-            case 'E':
-                safeString += inputValue[i];
-                break;
-            case 'W':
-                safeString += inputValue[i];
-                break;
-            case '\xB0':
-                safeString += inputValue[i];
-                break;
-            case '\'':
-                safeString += inputValue[i];
-                break;
-            case '"':
-            case '.':
-                safeString += inputValue[i];
-                break;
-            case '\u00A0':
-                break;
-
-            default:
-                if (Number.isNaN(Number.parseInt(inputValue[i])) === false) {
-                    safeString += Number.parseInt(inputValue[i]);
-
-                } else {
-                    console.error('ERROR CODE 10: Illegal character\n Character: ' + inputValue[i]);
-                }
-                break;
-        }
-
-    }
-
-    return safeString;
-}
-
-
-// Validating Decimal Degrees.
-function validateDD(inputValue) {
-    let safeString = '';
-
-    for (let i = 0; i < inputValue.length; i++) {
-        if (Number.isNaN(Number.parseInt(inputValue[i])) === false) {
-            safeString += Number.parseInt(inputValue[i]);
-
-        } else if (inputValue[i] === ',' || inputValue[i] === '.') {
-            safeString += inputValue[i];
-
-        } else {
-            console.error('ERROR CODE 11: Illegal character! \n Character is: ' + inputValue[i]);
-        }
-    }
-
-    return safeString;
-}
-
-
-// Validating a coordinate.
-function validateCoord(inputValue) {
-    if (dmsStatus === true) {
-        return validateDMS(inputValue);
-
-    } else {
-        return validateDD(inputValue);
-    }
-}
-
-
-// Converting a string to the latlng format.
-function stringToLatLng(str) {
-    console.log(str);
-    console.log(typeof str);
-    let input = str.split(',');
-    return {'lat': input[0], 'lng': input[1] };
-}
 
 
 // Adding input from the coordinates input.
 function addCoordInput(event, usrWPObj) {
     if (event.code === 'Enter') {
         // Validating the input.
-        let inputCoord = validateCoord(document.querySelector('#' + event.target.id).value);
-        console.log(inputCoord);
-        let latlng = (dmsStatus === true) ? dmsStringToDdLatlng(inputCoord) : stringToLatLng(inputCoord);
-        console.log(latlng);
+        try {
+            let inputCoord = validateCoord(document.querySelector('#' + event.target.id).value);
+            let latlng = (dmsStatus === true) ? dmsStringToDDLatlng(inputCoord) : ddStringToLatLng(inputCoord);
 
-        // Setting the new coordinate values.
-        usrWPObj.geoJSON.geometry.coordinates = [latlng.lng, latlng.lat];
-        usrWPObj.Leaflet.moveMarker(latlng);
+            // Setting the new coordinate values.
+            usrWPObj.geoJSON.geometry.coordinates = [latlng.lng, latlng.lat];
+            usrWPObj.Leaflet.moveMarker(latlng);
 
-        // Updating the directions.
-        updateDirections();
+            // Updating the directions.
+            updateDirections();
+        }
+        catch(e) {
+            // Handling DD too many decimal separators.
+            if (e.message.indexOf('DD Too many decimal separators') !== -1 ) {
+                try {
+                    let latlng = dmsStringToDDLatlng(validateDMS(document.querySelector('#' + event.target.id).value));
+                    document.querySelector('#' + event.target.id).value = latlngToString(latlng);
+
+                    // Setting the new coordinate values.
+                    usrWPObj.geoJSON.geometry.coordinates = [latlng.lng, latlng.lat];
+                    usrWPObj.Leaflet.moveMarker(latlng);
+
+                    // Updating the directions.
+                    updateDirections();
+                }
+                catch(e) {
+                    displayUsrErr(e);
+                }
+
+              // Handling user errors.
+            } else if (e.message.indexOf('USER ERROR') !== -1) {
+                displayUsrErr(e);
+            }
+        }
     }
 }
 
 
 // Updating all cords to DMS.
-function updateCoordsTypes() {
+/**
+ * Updating all coords to DMS or DD.
+ * @param forceDMS: Used to force update to DMS.
+ * @param forceDD: Used to force update to DD.
+ * @param recursion: Used to determine if it is a recursive call.
+ */
+function updateCoordsTypes(forceDMS = undefined, forceDD = undefined, recursion = undefined) {
     let coordList = document.querySelector('#coordListDiv').children;
 
+    function recursionVal() { return recursion; }
+
     for (let i = 0; i < coordList.length; i++) {
-        if (coordList[i].id) {
-            let curCoord;
-            let curVal = coordList[i].firstChild.value;
+        try {
+            if (coordList[i].id) {
+                let curCoord;
+                let curVal = coordList[i].firstChild.value;
 
-            // Incoming coordinates is in DD.
-            if (dmsStatus === true) {
-                // Converting to a DD object.
-                curCoord = stringToLatLng(validateDD(curVal));
-                // Converting to a DMS
-                curCoord = ddToDms(curCoord);
-                // Converting DMS to a string.
-                curCoord = latlngToString(curCoord);
+                // Incoming coordinates is in DD. Update coordinates to DMS.
+                if (((forceDMS || forceDD) ? forceDMS : dmsStatus === true)) {
+                    // Converting to a DD object.
+                    curCoord = ddStringToLatLng(validateDD(curVal));
+                    // Converting to a DMS
+                    curCoord = ddToDMS(curCoord);
+                    // Converting DMS to a string.
+                    curCoord = latlngToString(curCoord);
 
+                  // Incoming coordinates is in DMS. Update coordinates to DD.
+                } else if (((forceDD || forceDD) ? forceDD : dmsStatus === false)) {
+                    curCoord = latlngToString(dmsStringToDDLatlng(validateDMS(curVal)));
+                }
 
-            } else if (dmsStatus === false) { // Incoming coordinates is in DMS.
-                curCoord = latlngToString(dmsStringToDdLatlng(validateDMS(curVal)));
+                coordList[i].firstChild.value = curCoord;
+
             }
+        }
+        catch(e) {
+            // Handling user errors.
+            if (e.message.indexOf('USER ERROR') !== -1) {
+                displayUsrErr(e);
 
-            coordList[i].firstChild.value = curCoord;
+            } else {
+                if (e.message.indexOf('DD No separator present') !== -1) {
+                    if (recursionVal() === undefined) {
+                        updateCoordsTypes(forceDD, true);
+                    } else {
+                        throw new Error('RECURSION ERROR');
+                    }
+
+                } else {
+                    console.error(e);
+                }
+            }
 
         }
     }
@@ -379,7 +347,7 @@ function addCoordControls(usrWPObj) {
 function addCoordEl(usrWPObj) {
     let elParent = document.querySelector('#coordListDiv');
     let elContainer = document.createElement('div');
-    let coord = document.createElement('input'); //TODO add an input for this later.
+    let coord = document.createElement('input');
     let submit = document.createElement('input');
     let coordinatesArr = usrWPObj.geoJSON.geometry.coordinates;
 
@@ -397,12 +365,12 @@ function addCoordEl(usrWPObj) {
     // Setting the coordinate value.
      if (dmsStatus === true) {
         setTimeout(() => { // Timeout added to make sure that, Leaflet layer is added in usrWPObj.
-            coord.value = latlngToString(ddToDms(usrWPObj.Leaflet.getMarkerLatLng()));
+            coord.value = latlngToString(ddToDMS(usrWPObj.Leaflet.getMarkerLatLng()));
         }, 5);
 
     } else if (dmsStatus === false) {
         coord.value = coordinatesArr[1].toFixed(3).toString() + ', ' + coordinatesArr[0].toFixed(3).toString();
-    }  // FIXME
+    }
 
     // Adding an event listener to the coordinate element.
     coord.addEventListener('keyup', (event) => {
@@ -598,7 +566,7 @@ map.on('mousemove', (event) => {
     let cordStr;
 
     if (dmsStatus === true) {
-        cordStr = latlngToString(ddToDms(coord));
+        cordStr = latlngToString(ddToDMS(coord));
 
     } else if (dmsStatus === false) {
         cordStr = latlngToString(coord);
