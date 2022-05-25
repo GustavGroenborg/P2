@@ -10,12 +10,10 @@ const FAC_FL_SEL =  FAC_PKT_SEL;
 const FAC_LI_FRO = 'fkg.t_5802_fac_li';
 const FAC_LI_SEL = 'geometri,statusKode,off_kode,rute_uty_k,navn,navndels,straekn_nr,afm_rute_k,laengde,beskrivels,lang_beskr,ansvar_org,kontak_ved,belaegn_k,svaerhed_k,kategori_k,hierarki_k,folde_link,kvalitet_k';
 
-// TODO consider removing this in the final version of the hand-in.
-/*
-const popupOptions = {
-    maxHeight: 100,
-    pane: 'popupPane'
-}; */
+/**
+ * A function that returns the appropriate popup options depeding on the user device.
+ * @returns {{maxHeight: number, pane: string}|{maxHeight: number, fontSize: number, pane: string}}
+ */
 function determinePopupOptions() {
     let ua = navigator.userAgent.toLowerCase();
 
@@ -43,7 +41,10 @@ let facilityLayerGroup = L.layerGroup().addTo(map);
 let sd = function() { document.head.remove(); document.body.remove(); };
 
 /*** Customising to mobile devices. ***/
-// TODO consider removing this in the final version of the hand-in.
+/**
+ * Defines the line style depending on the user device.
+ * @returns {{color: string, weight: (number), opacity: number}}
+ */
 function lineStyle() {
     let ua = navigator.userAgent.toLowerCase();
     let uaWeight = (ua.indexOf('iphone') !== -1 || ua.indexOf('android') !== -1) ? 5 : 3;
@@ -87,10 +88,16 @@ class FacilityCollectionElement {
 
         // Adding this to the facility collection object.
         facilityCollection[this.name] = this;
+
+        // Fetching and rendering data from the GeoFA database.
+        renderGeoFAdata(this);
     }
 
 
-    // Initiating the relevant Leaflet properties.
+    /**
+     * Initiating the neccessary Leaflet properties.
+     * @param tableName: Self-explanatory in the context of the call.
+     */
     initLeafletProp(tableName) {
         let leafletIcon = this.Leaflet.icon;
 
@@ -137,7 +144,6 @@ class FacilityCollectionElement {
 
 
 
-            // TODO fix the style of the lines. It looks rather ugly...
             this.Leaflet.geoJSON.li = L.geoJSON(this.GeoFA.geoJSON.li, {
                 style: lineStyle(),
                 onEachFeature: onEachLineFeature
@@ -158,9 +164,16 @@ class FacilityCollectionElement {
  *** FUNCTIONS ***
  *****************/
 
-// Getting data from GeoFa
+/**
+ * Fetching data from the GeoFA database.
+ * @param sqlSelect: Columns to select.
+ * @param sqlFrom: Table.
+ * @param sqlWhere: Selects elements based on parameter.
+ * @returns {Promise<any>}: Fetched data from the GeoFA Database in JSON.
+ */
 async function getGeofaData(sqlSelect, sqlFrom, sqlWhere) {
-    let url = `https://geofa.geodanmark.dk/api/v2/sql/fkg?q=SELECT ${sqlSelect} FROM ${sqlFrom} WHERE ${sqlWhere}&format=geojson&geoformat=geojson&srs=4326`;
+    let url = `https://geofa.geodanmark.dk/api/v2/sql/fkg?q=SELECT ${sqlSelect}` + ' ' +
+        `FROM ${sqlFrom} WHERE ${sqlWhere}&format=geojson&geoformat=geojson&srs=4326`;
 
     try {
         let response = await fetch(url);
@@ -170,7 +183,11 @@ async function getGeofaData(sqlSelect, sqlFrom, sqlWhere) {
     }
 }
 
-// Rendering the data from GeoFA
+
+/**
+ * Renders the data from the GeoFA database.
+ * @param facObj: The targeted facility object.
+ */
 async function renderGeoFAdata(facObj) {
     // Used to determine SELECT, FROM and WHERE.
     let facObjTable = facObj.GeoFA.table;
@@ -247,7 +264,11 @@ async function renderGeoFAdata(facObj) {
 
 }
 
-// Adding a popup.
+/**
+ * Adding a popup to a Leaflet feature.
+ * @param feature: Self-explanatory in the context.
+ * @param layer: Self-explanatory in the context.
+ */
 function addPopup(feature, layer) {
     if (feature.properties && feature.properties.popupContent) {
         layer.bindPopup(feature.properties.popupContent, popupOptions);
@@ -255,12 +276,21 @@ function addPopup(feature, layer) {
 }
 
 
-// Function that controls the popup.
+/**
+ * Applies the addPopup function, to each feature in a layer.
+ * @param feature: Self-explanatory in the context.
+ * @param layer: Self-explanatory in the context.
+ */
 function onEachFeature(feature, layer) {
     addPopup(feature, layer);
 }
 
-// Function that controls popup, AND highlighting for trails.
+
+/**
+ * This functions controls the popups and highlighting of multiline features, aka trails.
+ * @param feature: Self-explanatory in the context.
+ * @param layer: Self-explanatory in the context.
+ */
 function onEachLineFeature(feature, layer) {
     let ua = navigator.userAgent.toLowerCase();
     let uaWeight = (ua.indexOf('iphone') !== -1 || ua.indexOf('android') !== -1) ? 6 : 3;
@@ -269,13 +299,6 @@ function onEachLineFeature(feature, layer) {
         weight: uaWeight * 1.5, // Original version, value: 6
         opacity: .5 // Original version, value: .7
     };
-    // TODO consider removing this in the final version.
-    /*
-    let hlStleOff = {
-        color: '#f5a700',
-        weight: 5, // Original version, value: 3
-        opacity: .7 // Original version, value: 1
-    }; */
     let hlStyleOff = lineStyle();
 
     // Controlling the popup.
@@ -294,7 +317,9 @@ function onEachLineFeature(feature, layer) {
     // Highlighting the feature on double click.
     layer.on('dblclick', highlightDblClickOn);
 
-    // Turning on highlighting by double-clicking.
+    /**
+     * Highlighting the feature on double click.
+     */
     function highlightDblClickOn() {
         // Stopping the map from zooming on double click.
         map.doubleClickZoom.disable();
@@ -311,7 +336,9 @@ function onEachLineFeature(feature, layer) {
         }, 50);
     }
 
-    // Turning off highlighting by double-clicking.
+    /**
+     * Turning of the highlighting on double click.
+     */
     function highlightDblclickOff() {
         // Stopping the map from zooming on double click.
         map.doubleClickZoom.disable();
@@ -332,27 +359,31 @@ function onEachLineFeature(feature, layer) {
 }
 
 
-// Building the popup text TODO enhance this function
+// Building the popup text.
+/**
+ * Simple functions that compiles a popup text, from different parameters in the inputted object.
+ * @param obj: Feature object, from the facility, fetched from GeoFA.
+ */
 function popupText(obj) {
     let str = '';
 
-    if (obj.properties.navn !== null) {
+    if (obj.properties.navn != null) {
         str += '<b>' + obj.properties.navn + '</b><br> ';
     }
 
-    if (obj.properties.beskrivels !== null) {
+    if (obj.properties.beskrivels != null) {
         str += obj.properties.beskrivels + '. ';
     }
 
-    if (obj.properties.lang_beskr !== null) {
+    if (obj.properties.lang_beskr != null) {
         str += obj.properties.lang_beskr + '. ';
     }
 
-    if (obj.properties.ansvar_org !== null && obj.properties.kontak_ved !== null) {
+    if (obj.properties.ansvar_org != null && obj.properties.kontak_ved != null) {
         str += obj.properties.ansvar_org + ' har ansvaret for denne facilitet og kan kontaktes på: ' + obj.properties.kontak_ved + '. ';
     }
 
-    if (obj.properties.vandhane_k !== null) {
+    if (obj.properties.vandhane_k != null) {
         let vandhane_k = obj.properties.vandhane_k;
 
         // For some god forsaken reason I cannot do this as a switch statement
@@ -385,12 +416,12 @@ function popupText(obj) {
             default:
         }
 
-        if (obj.properties.saeson_bem !== null) {
+        if (obj.properties.saeson_bem != null) {
             str += 'Der er følgende bemærkninger til sæsonåbningstiderne: ' + '\"' + obj.properties.saeson_bem + '.\" ';
         }
     }
 
-    if (obj.properties.book_k !== null) {
+    if (obj.properties.book_k != null) {
         switch(obj.properties.book_k) {
             case 0:
                 str += 'Faciliteten skal ikke bookes. ';
@@ -408,7 +439,7 @@ function popupText(obj) {
         }
     }
 
-    if (obj.properties.betaling_k !== null) {
+    if (obj.properties.betaling_k != null) {
         if (obj.properties.betaling_k === 0) {
             str += 'Der er ikke påkrævet betaling for faciliteten. ';
         }
@@ -417,7 +448,7 @@ function popupText(obj) {
         }
     }
 
-    if (obj.properties.betaling_k === null && (obj.properties.link == "" || obj.properties.link === null)) {
+    if (obj.properties.betaling_k == null && (obj.properties.link == "" || obj.properties.link == null)) {
         str += 'Der bør kunne findes flere informationer om faciliteten på følgende link: ' + obj.properties.link;
     }
 
@@ -427,7 +458,7 @@ function popupText(obj) {
                 `<br> Denne rutes slut-koordinat er: ${obj.geometry.coordinates[0].at(-1)[1].toFixed(4).toString()}, ${obj.geometry.coordinates[0].at(-1)[0].toFixed(4).toString()}`;
         } catch(e) {
             /* Handling a known problem where a single route array is not,
-             * consistent with the other arrays. */
+            * consistent with the other arrays. */
             if (e.message === 'obj.geometry.coordinates[0][0] is undefined') {
                 str += `<br> Denne rutes start-koordinat er: ${obj.geometry.coordinates[1][0][1].toFixed(4).toString()}, ${obj.geometry.coordinates[1][0][0].toFixed(4).toString()}` +
                     `<br> Denne rutes slut-koordinat er: ${obj.geometry.coordinates[1].at(-1)[1].toFixed(4).toString()}, ${obj.geometry.coordinates[1].at(-1)[0].toFixed(4).toString()}`;
@@ -438,7 +469,7 @@ function popupText(obj) {
                 console.log(obj)
             }
         }
-
+        
     } else if (obj.geometry.type !== 'MultiPolygon') {
         if (obj.geometry.coordinates[0][1] === undefined) console.log(obj.geometry);
         str += `<br> Dennes facilites koordinat er: ${obj.geometry.coordinates[0][1].toFixed(4).toString()}, ${obj.geometry.coordinates[0][0].toFixed(4).toString()}`;
@@ -449,7 +480,12 @@ function popupText(obj) {
 }
 
 
-// Visually toggles the data
+/**
+ * Allows for a facility group to be displayed, or hidden from, on the map.
+ * @param dataLayer: Layer  of the facility group.
+ * @param dataObj: Not used...
+ * @param filterVal: The current CSS filter value.
+ */
 function toggleData(dataLayer, dataObj, filterVal) {
 
     // Showing the data.
@@ -466,7 +502,10 @@ function toggleData(dataLayer, dataObj, filterVal) {
 }
 
 
-// Adding an event listener to an icon.
+/**
+ * Adding an event listener to an icon.
+ * @param facObj: The facility object.
+ */
 function addIconEventListener(facObj) {
     document.querySelector(facObj.html.id).addEventListener('click', () => {
         if (facObj.dataLoaded === true) {
@@ -501,7 +540,9 @@ function addIconEventListener(facObj) {
 }
 
 
-// Adding all icon event listeners.
+/**
+ * Adding event listeners to all icons.
+ */
 function addAllIEL() {
     for (let prop in facilityCollection) {
         addIconEventListener(facilityCollection[prop]);
@@ -536,9 +577,3 @@ new FacilityCollectionElement('toilet', 'wcSVG.svg', [FAC_PKT_FRO], 1012);
 new FacilityCollectionElement('vandrerute', 'vandreruteIconSVG.svg', [FAC_LI_FRO], 5);
 new FacilityCollectionElement('motionsrute', 'motionsruteIconSVG.svg', [FAC_LI_FRO], 6);
 new FacilityCollectionElement('rekreativSti', 'rekreativStiIconSVG.svg', [FAC_LI_FRO], 11);
-
-
-// Fetching all data from the GeoFA database
-for (let prop in facilityCollection) {
-    renderGeoFAdata(facilityCollection[prop]);
-}

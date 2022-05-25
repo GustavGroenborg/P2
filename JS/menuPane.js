@@ -32,7 +32,6 @@ function dropDownIcon() {
 
 /*** Removing the necessary properties depending on user OS ***/
 (function() {
-    // TODO Consider removing this in the final version, before hand-in.
     if (navigator.userAgent.indexOf('Safari') !== -1 || navigator.userAgent.indexOf('iPhone') !== -1) {
         // Removing the css facilIcon:hover property.
         for (let i in document.styleSheets) {
@@ -432,7 +431,6 @@ function addFacilityIcon(parentRowId, facObj) {
     newIcon.className = 'facilIcon';
     newIcon.style.filter = 'grayscale(100%) blur(2px)';
 
-    // TODO Consider removing this in the final version, before hand-in.
     let ua = navigator.userAgent.toLowerCase();
     // Making the icon larger, if the user is on mobile.
     if (ua.indexOf('iphone') !== -1 || ua.indexOf('android') !== -1) {
@@ -448,9 +446,10 @@ function addFacilityIcon(parentRowId, facObj) {
 }
 
 
-// Adds all necessary rows and all available facilities.
+/**
+ * Adds all necessary rows and all available facilities.
+ */
 function constructFacilityRows() {
-    // TODO Consider removing this in the final version, before hand-in.
     let ua = navigator.userAgent.toLowerCase();
     let maxFacilityNo = (ua.indexOf('iphone') !== -1 || ua.indexOf('android') !== -1) ? 2 : 4;
     let facilityNo = 0;
@@ -527,7 +526,8 @@ updateTotalDistance();
 
 // Update totaltDistance.
 function updateTotalDistance() {
-    document.querySelector('#routeDistance').textContent = totalDistance.toFixed(3).toString() + ' ' + 'km';
+    document.querySelector('#routeDistance').textContent = totalDistance.toFixed(3).toString() +
+        ' ' + 'km';
 }
 
 

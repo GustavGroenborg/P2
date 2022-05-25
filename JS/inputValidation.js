@@ -16,7 +16,11 @@ const DEG_SIGN = '\xB0'
 
 /*** Functions ***/
 
-// Checking that all DMS properties exist.
+/**
+ * Checking that the necessary DMS properties exist.
+ * @param dmsObj: DMS Object.
+ * @returns {boolean}: True if properties exist, otherwise false.
+ */
 function DMSObjHasAllProperties(dmsObj) {
     if ((dmsObj.lat.hasOwnProperty('d') && dmsObj.lat.hasOwnProperty('m') && dmsObj.lat.hasOwnProperty('s')) &&
         (dmsObj.lng.hasOwnProperty('d') && dmsObj.lng.hasOwnProperty('m') && dmsObj.lng.hasOwnProperty('s'))) {
@@ -28,7 +32,12 @@ function DMSObjHasAllProperties(dmsObj) {
 }
 
 
-// Checking that DMS properties are of a specified type.
+/**
+ * Checking that DMS properties are of a specified type.
+ * @param dmsObj: DMS object.
+ * @param typeStr: Which type, as a string.
+ * @returns {boolean}: True if properties are of type typeStr, otherwise false.
+ */
 function DMSObjPropsTypeof(dmsObj, typeStr) {
     if ((typeof dmsObj.lat.d === typeStr && typeof dmsObj.lat.m === typeStr && typeof dmsObj.lat.s === typeStr) &&
         (typeof dmsObj.lng.d === typeStr && typeof dmsObj.lng.m === typeStr && typeof dmsObj.lng.s === typeStr)) {
@@ -40,7 +49,6 @@ function DMSObjPropsTypeof(dmsObj, typeStr) {
 }
 
 
-// Parses the string values of DMS object properties.
 /**
  * Parses the string values of a DMS object's properties.
  * @param inputObj: Input DMS object.
@@ -72,7 +80,6 @@ function parseDMSSubProps(inputObj, outputObj, propName, recursion = undefined) 
         }
     } else {
         // Checking the given object has all the necessary properties.
-        // NOTE Recursive protection should be redundant here...
         if (DMSObjHasAllProperties(inputObj)) {
             if (recursion === undefined) {
                 // Parsing the DMS object recursively.
@@ -161,7 +168,6 @@ function validateDMS(input, recursion = undefined) {
           // Checking if there is too many Hemisphere notations.
         } else if (NHIdx !== safeString.lastIndexOf('N') ||
                    EHIdx !== safeString.lastIndexOf('E')) {
-            // TODO Think about rewording this.
             throw new Error(`USER ERROR DMS Too many Hemisphere notations`);
 
         } else {
@@ -434,7 +440,6 @@ function validateDD(input, recursion = undefined) {
                     return input;
 
                 } else {
-                    // NOTE Should this be a TypeError?
                     throw new Error('INTERNAL ERROR Inconsistent property types');
                 }
             }
@@ -465,26 +470,32 @@ function validateCoord(inputValue) {
 /**
  * Displays an error message to the user.
  * @param errorObj: Error object.
+ * @param overrideErrMsg: String containing an error message. Used when a custom error message is desired.
  */
-function displayUsrErr(errorObj) {
+function displayUsrErr(errorObj, overrideErrMsg = undefined) {
     let errMsg = '';
     let divHeight;
 
-    // Reformulating the error message.
-    if (errorObj.message.indexOf('DMS') !== -1) {
-        errMsg = 'ERROR with Degrees-Minutes-Seconds:' + ' ' + errorObj.message.split('USER ERROR DMS ')[1] + '.';
+    if (overrideErrMsg === undefined) {
+        // Reformulating the error message.
+        if (errorObj.message.indexOf('DMS') !== -1) {
+            errMsg = 'ERROR with Degrees-Minutes-Seconds:' + ' ' + errorObj.message.split('USER ERROR DMS ')[1] + '.';
 
-    } else if (errorObj.message.indexOf('DD') !== -1) {
-        errMsg = 'ERROR with Decimal-Degrees:' + ' ' + errorObj.message.split('USER ERROR DD ')[1] + '.';
+        } else if (errorObj.message.indexOf('DD') !== -1) {
+            errMsg = 'ERROR with Decimal-Degrees:' + ' ' + errorObj.message.split('USER ERROR DD ')[1] + '.';
 
-    } else {
-        errMsg = errorObj.message.split('USER ERROR ')[1] + '.';
-    }
+        } else {
+            errMsg = errorObj.message.split('USER ERROR ')[1] + '.';
+        }
 
-    // Determining if it is a range error.
-    if (errorObj instanceof RangeError) {
-        errMsg += ' ' + 'The latitude must be between 54' + '\xB0' + 'N and 58' + '\xB0' + 'N.' +
-            ' ' + 'The longitude must be be between 7' + '\xB0' + 'E and 16' + '\xB0' + 'E.';
+        // Determining if it is a range error.
+        if (errorObj instanceof RangeError) {
+            errMsg += ' ' + 'The latitude must be between 54' + '\xB0' + 'N and 58' + '\xB0' + 'N.' +
+                ' ' + 'The longitude must be be between 7' + '\xB0' + 'E and 16' + '\xB0' + 'E.';
+        }
+
+    } else if (overrideErrMsg) {
+        errMsg = overrideErrMsg;
     }
 
     // Creating a new error div element.

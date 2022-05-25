@@ -92,40 +92,51 @@ function connectEnds(startCoordArr, endCoordArr) {
 
 
 /**
- * Fetching directions from the MapBox API.
+ * Fetching directions from the Mapbox Directions API. When the directions have been fetched they are
+ * added to the map.
  * @param startCoordsArr: Array containing the first coordinate of the route.
  * @param endCoordsArr: Array containing the last coordinate of the route.
- * @returns {Promise<any>}: A route in JSON.
  */
-async function fetchDirections(startCoordsArr, endCoordsArr) {
-    let query = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/walking/${startCoordsArr};${endCoordsArr}?steps=true&geometries=geojson&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`,
-        {method: 'GET'}
-    );
-
-    return await query.json();
-}
-
-// TODO rewrite this to then.
-// Requesting directions.
 async function getDirections(startCoordsArr, endCoordsArr) {
     if (usrWPCollection.length > 1) {
-        let data = await fetchDirections(startCoordsArr, endCoordsArr);
-        let route = data.routes[0].geometry.coordinates;
+        fetch(
+            `https://api.mapbox.com/directions/v5/mapbox/walking/${startCoordsArr};` +
+            `${endCoordsArr}?steps=true&geometries=geojson&overview=full&` +
+            `access_token=${MAPBOX_ACCESS_TOKEN}`,
+            {method: 'GET'})
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(rensponse.statusText, response.status);
+                }
 
-        // Adding the distance to from the new route to total distance.
-        addDistanceFromRouteArr(route);
+                return response.json();
+            })
+            .then(route => {
+                let routeData = route.routes[0].geometry.coordinates;
 
-        // Adding the new directions to the map
-        let directions = new GeojsonDirections(data.waypoints[0].name, route);
-        directions.addToMap();
+                // Adding the distance from the new route to total distance.
+                addDistanceFromRouteArr(routeData);
+
+                // Adding the new route to the map.
+                let directions = new GeojsonDirections(route.waypoints[0].name,
+                    routeData);
+                directions.addToMap();
+
+                // Connecting the ends.
+                let routeStart = routeData[0];
+                let routeEnd = routeData.at(-1);
+                connectEnds([startCoordsArr, routeStart], [endCoordsArr, routeEnd]);
 
 
-        // Connecting the ends
-        let routeStart = await route[0];
-        let routeEnd = await route[route.length - 1];
-        connectEnds([startCoordsArr, routeStart], [endCoordsArr, routeEnd]);
-
+            })
+            .catch(e => {
+                if (e.message.indexOf('NetworkError') !== -1) {
+                    displayUsrErr(e,
+                        'Network error: Please check your internet connection.');
+                } else {
+                    console.log(e);
+                }
+            });
     }
 }
 

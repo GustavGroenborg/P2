@@ -96,7 +96,6 @@ function ddToDMS(latlngObj) {
     let lng = latlngObj.lng;
     let dms = {lat: {}, lng: {}};
 
-    // TODO: I feel like there is a smarter way around this.
     // Setting DMS latitude
     dms.lat.d = Math.floor(lat);
     dms.lat.m = Math.floor(60 * Math.abs(lat - dms.lat.d));

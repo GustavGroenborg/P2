@@ -155,6 +155,7 @@
                 document.querySelector('#mapv1').style.removeProperty('display');
 
                 // Adding Google Analytics.
+
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
@@ -173,7 +174,13 @@
             let ua = navigator.userAgent.toLowerCase();
 
             if (ua.indexOf('mac os') !== -1 && ua.indexOf('safari') !== -1 && ua.indexOf('iphone') === -1) {
-                alert('This website does not fully support Safari. Features such as viewing information about facilities does not work. For a better experience, please use Mozilla FireFox, Google Chrome or visit this website through your phone.');
+                setTimeout(() => {
+                    alert('This website does not fully support desktop Safari or chrome on MacOS.' + ' ' +
+                    'Features such as viewing information about facilities does not work.' + ' ' +
+                    'For a better experience, please use Mozilla FireFox or visit this website through your phone.' +
+                    ' ' + 'If you are accessing this, through a local folder, and something is broken, please try' + ' ' +
+                    'to access this solution through the following url https://GustavGroenborg.github.io/P2');
+                }, 5000);
             }
         })();
     </script>
